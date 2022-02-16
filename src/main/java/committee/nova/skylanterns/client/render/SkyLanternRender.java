@@ -46,7 +46,7 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
 
     protected final  PaperLanternPinkModel model = new PaperLanternPinkModel();
     private final Minecraft mc = Minecraft.getInstance();
-    public final TextureAtlasSprite LIGHT = mc.getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(new ResourceLocation(Skylanterns.MOD_ID + ":entities/radiant_light.png"));
+    //public final TextureAtlasSprite LIGHT = mc.getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(new ResourceLocation(Skylanterns.MOD_ID + ":entities/radiant_light.png"));
     public HashMap<Integer, ResourceLocation> TEXTURES = new HashMap<>();
 
     public SkyLanternRender(EntityRendererManager p_i50965_1_) {

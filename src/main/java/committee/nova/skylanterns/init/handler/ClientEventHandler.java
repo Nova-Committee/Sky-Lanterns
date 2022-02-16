@@ -31,7 +31,7 @@ public class ClientEventHandler {
 
         //optifine breaks (removes) forge added method setTextureEntry, dont use it
 
-        event.addSprite(new ResourceLocation(Skylanterns.MOD_ID + ":entities/radiant_light.png"));
+        event.addSprite(new ResourceLocation(Skylanterns.MOD_ID + ":entities/radiant_light"));
 
     }
 

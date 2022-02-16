@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    " w ",
+    "sts"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:stick"
+    },
+    "w": {
+      "item": "minecraft:orange_wool"
+    },
+    "t": {
+      "item": "minecraft:torch"
+    }
+  },
+  "result": {
+    "item": "skylanterns:sky_lantern_orange",
+    "count": 1
+  }
+}

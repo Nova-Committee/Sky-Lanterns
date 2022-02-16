@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    " w ",
+    "sts"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:stick"
+    },
+    "w": {
+      "item": "minecraft:pink_wool"
+    },
+    "t": {
+      "item": "minecraft:torch"
+    }
+  },
+  "result": {
+    "item": "skylanterns:sky_lantern_pink",
+    "count": 1
+  }
+}
