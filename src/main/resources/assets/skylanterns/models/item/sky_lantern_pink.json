@@ -1,0 +1,6 @@
+{
+	"parent": "item/handheld",
+	"textures": {
+		"layer0": "skylanterns:items/sky_lantern_pink"
+	}
+}
