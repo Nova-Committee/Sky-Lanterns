@@ -3,7 +3,7 @@ package committee.nova.skylanterns.client.render;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.client.model.BaseModelCache;
 import committee.nova.skylanterns.client.model.ModModelCache;
 import committee.nova.skylanterns.client.model.PaperLanternPinkModel;
@@ -52,13 +52,13 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
     public SkyLanternRender(EntityRendererManager p_i50965_1_) {
         super(p_i50965_1_);
 
-        TEXTURES.put(DyeColor.ORANGE.getId(), new ResourceLocation(Skylanterns.MOD_ID + ":textures/entities/sky_lantern_orange.png"));
-        TEXTURES.put(DyeColor.PINK.getId(), new ResourceLocation(Skylanterns.MOD_ID + ":textures/entities/sky_lantern_pink.png"));
+        TEXTURES.put(DyeColor.ORANGE.getId(), new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_orange.png"));
+        TEXTURES.put(DyeColor.PINK.getId(), new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_pink.png"));
     }
 
     @Override
     public ResourceLocation getTextureLocation(SkyLanternEntity entity) {
-        return new ResourceLocation(Skylanterns.MOD_ID + ":textures/entities/sky_lantern_"+ entity.getColor().getRegistryPrefix() +".png");
+        return new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_" + entity.getColor().getRegistryPrefix() + ".png");
     }
 
     @Override

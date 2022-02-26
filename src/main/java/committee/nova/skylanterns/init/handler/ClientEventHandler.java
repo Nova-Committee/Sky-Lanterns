@@ -1,6 +1,6 @@
 package committee.nova.skylanterns.init.handler;
 
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.client.model.ModModelCache;
 import committee.nova.skylanterns.client.render.SkyLanternRender;
 import committee.nova.skylanterns.init.ModEntities;
@@ -21,7 +21,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
  * Date: 2022/2/12 12:11
  * Version: 1.0
  */
-@Mod.EventBusSubscriber(modid = Skylanterns.MOD_ID,bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SkyLanterns.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEventHandler {
 
 
@@ -31,7 +31,7 @@ public class ClientEventHandler {
 
         //optifine breaks (removes) forge added method setTextureEntry, dont use it
 
-        event.addSprite(new ResourceLocation(Skylanterns.MOD_ID + ":entities/radiant_light"));
+        event.addSprite(new ResourceLocation(SkyLanterns.MOD_ID + ":entities/radiant_light"));
 
     }
 

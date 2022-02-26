@@ -1,6 +1,6 @@
 package committee.nova.skylanterns.init;
 
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -17,13 +17,13 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public class ModEntities {
 
-    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, Skylanterns.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, SkyLanterns.MOD_ID);
 
 
     public static final RegistryObject<EntityType<SkyLanternEntity>> SkyLantern = ENTITIES.register("skylantern",
             () -> EntityType.Builder.of(SkyLanternEntity::new, EntityClassification.CREATURE)
                     .sized(1f, 1f)
-                    .build(new ResourceLocation(Skylanterns.MOD_ID, "skylantern").toString()));
+                    .build(new ResourceLocation(SkyLanterns.MOD_ID, "skylantern").toString()));
 
 
 

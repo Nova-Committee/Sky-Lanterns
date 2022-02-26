@@ -1,6 +1,6 @@
 package committee.nova.skylanterns.common.configs;
 
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
  * Date: 2022/2/12 12:22
  * Version: 1.0
  */
-@Mod.EventBusSubscriber(modid = Skylanterns.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = SkyLanterns.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModConfig {
     public static final Common COMMON;
     public static final ForgeConfigSpec CONFIG_SPEC;

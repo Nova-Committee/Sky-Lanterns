@@ -37,8 +37,8 @@ public class SkyLanternsItem extends Item {
 
     @Override
     public ActionResultType useOn(ItemUseContext pContext) {
-        World world = pContext.getLevel();
-        BlockPos pos = pContext.getClickedPos();
+        final World world = pContext.getLevel();
+        final BlockPos pos = pContext.getClickedPos();
         if (!world.isClientSide) {
             ItemStack stack = pContext.getItemInHand();
             if (!stack.isEmpty()) {
