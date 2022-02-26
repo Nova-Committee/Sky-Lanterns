@@ -72,7 +72,6 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
 
-
     @Nullable
     public static SkyLanternEntity create(World world, double x, double y, double z, EnumColor c) {
         final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
@@ -129,14 +128,14 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         return balloon;
     }
 
-    public static AttributeModifierMap.MutableAttribute setAttributes(){
+    public static AttributeModifierMap.MutableAttribute setAttributes() {
         return MobEntity.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 30.0D);
     }
 
-    public static double processYSpeed(double y, Random random){
+    public static double processYSpeed(double y, Random random) {
         double a = 0;
-        if(y == 0) return 0;
+        if (y == 0) return 0;
         a = Math.min(y + random.nextDouble() * 0.1, 0.2F);
         SkyLanterns.LOGGER.info(a);
         return a;
@@ -221,7 +220,6 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         }
 
 
-
         if (!level.isClientSide) {
             if (latched != null) {
                 final Optional<BlockState> blockState = WorldUtils.getBlockState(level, latched);
@@ -261,13 +259,13 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
                     long time = (this.getId() * 3L) + level.getGameTime() * 3;
                     float timeClampSpeed = (((time)) % 360) - 180;
 
-                    float tiltMax = (float)Math.toRadians(timeClampSpeed);
+                    float tiltMax = (float) Math.toRadians(timeClampSpeed);
 
                     double speed = 0.006;
                     if (tickCount < 40) {
                         speed = 0.004F;
                     }
-                    motion = new Vector3d(motion.x() - Math.cos(tiltMax) * speed , motion.y() , motion.z() + Math.sin(tiltMax) * speed);
+                    motion = new Vector3d(motion.x() - Math.cos(tiltMax) * speed, motion.y(), motion.z() + Math.sin(tiltMax) * speed);
                 }
             }
 
@@ -356,8 +354,6 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     protected boolean isMovementNoisy() {
         return false;
     }
-
-
 
 
     @Override

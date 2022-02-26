@@ -3,13 +3,12 @@ package committee.nova.skylanterns.utils;
 import javax.annotation.Nonnull;
 import java.util.function.Predicate;
 
-public interface IIncrementalEnum <TYPE extends Enum<TYPE> & IIncrementalEnum<TYPE>> {
+public interface IIncrementalEnum<TYPE extends Enum<TYPE> & IIncrementalEnum<TYPE>> {
 
     /**
      * Gets the next "valid" element
      *
      * @param isValid Predicate defining if an element is valid
-     *
      * @return The next "valid" element
      */
     @Nonnull
@@ -30,7 +29,6 @@ public interface IIncrementalEnum <TYPE extends Enum<TYPE> & IIncrementalEnum<TY
      * Gets the previous "valid" element
      *
      * @param isValid Predicate defining if an element is valid
-     *
      * @return The previous "valid" element
      */
     @Nonnull
@@ -82,9 +80,7 @@ public interface IIncrementalEnum <TYPE extends Enum<TYPE> & IIncrementalEnum<TY
      * Gets the "valid" element that is offset by the given shift
      *
      * @param shift Shift to perform, may be negative to indicate going backwards
-     *
      * @return The "valid" element that is offset by the given shift
-     *
      * @implNote Default implementation assumes all elements are "valid", override this if that is not the case.
      */
     @Nonnull
@@ -97,7 +93,6 @@ public interface IIncrementalEnum <TYPE extends Enum<TYPE> & IIncrementalEnum<TY
      *
      * @param shift   Shift to perform, may be negative to indicate going backwards
      * @param isValid Predicate defining if an element is valid
-     *
      * @return The "valid" element that is offset by the given shift. If no elements are "valid" returns the current element.
      */
     @Nonnull

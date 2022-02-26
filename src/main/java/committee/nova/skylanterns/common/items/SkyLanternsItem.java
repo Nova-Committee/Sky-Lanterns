@@ -33,8 +33,6 @@ public class SkyLanternsItem extends Item {
     }
 
 
-
-
     @Override
     public ActionResultType useOn(ItemUseContext pContext) {
         final World world = pContext.getLevel();

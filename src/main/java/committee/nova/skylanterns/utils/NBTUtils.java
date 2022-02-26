@@ -151,7 +151,6 @@ public class NBTUtils {
     }
 
 
-
     public static void setItemStackIfPresent(CompoundNBT nbt, String key, Consumer<ItemStack> setter) {
         if (nbt.contains(key, NBT.TAG_COMPOUND)) {
             setter.accept(ItemStack.of(nbt.getCompound(key)));

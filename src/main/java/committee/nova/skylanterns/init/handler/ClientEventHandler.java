@@ -25,7 +25,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public class ClientEventHandler {
 
 
-
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void registerIconsPre(TextureStitchEvent.Pre event) {
 

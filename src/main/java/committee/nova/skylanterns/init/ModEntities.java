@@ -26,6 +26,4 @@ public class ModEntities {
                     .build(new ResourceLocation(SkyLanterns.MOD_ID, "skylantern").toString()));
 
 
-
-
 }
