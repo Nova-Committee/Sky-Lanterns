@@ -40,11 +40,11 @@ public class SkyLanternsItem extends Item {
         final World world = pContext.getLevel();
         final BlockPos pos = pContext.getClickedPos();
         if (!world.isClientSide) {
-            ItemStack stack = pContext.getItemInHand();
+            final ItemStack stack = pContext.getItemInHand();
             if (!stack.isEmpty()) {
                 pContext.getPlayer().swing(pContext.getHand());
 
-                SkyLanternEntity entity = SkyLanternEntity.create(world, new BlockPos(pos.getX(), pos.getY() + 0.5, pos.getZ()), color);
+                final SkyLanternEntity entity = SkyLanternEntity.create(world, new BlockPos(pos.getX(), pos.getY() + 0.5, pos.getZ()), color);
                 if (entity == null) {
                     return ActionResultType.FAIL;
                 }
@@ -61,15 +61,15 @@ public class SkyLanternsItem extends Item {
     public ActionResultType interactLivingEntity(@Nonnull ItemStack stack, PlayerEntity player, @Nonnull LivingEntity entity, @Nonnull Hand hand) {
         if (player.isShiftKeyDown()) {
             if (!player.level.isClientSide) {
-                AxisAlignedBB bound = new AxisAlignedBB(entity.getX() - 0.2, entity.getY() - 0.5, entity.getZ() - 0.2,
+                final AxisAlignedBB bound = new AxisAlignedBB(entity.getX() - 0.2, entity.getY() - 0.5, entity.getZ() - 0.2,
                         entity.getX() + 0.2, entity.getY() + entity.getDimensions(entity.getPose()).height + 4, entity.getZ() + 0.2);
-                List<SkyLanternEntity> balloonsNear = player.level.getEntitiesOfClass(SkyLanternEntity.class, bound);
+                final List<SkyLanternEntity> balloonsNear = player.level.getEntitiesOfClass(SkyLanternEntity.class, bound);
                 for (SkyLanternEntity balloon : balloonsNear) {
                     if (balloon.latchedEntity == entity) {
                         return ActionResultType.SUCCESS;
                     }
                 }
-                SkyLanternEntity balloon = SkyLanternEntity.create(entity, color);
+                final SkyLanternEntity balloon = SkyLanternEntity.create(entity, color);
                 if (balloon == null) {
                     return ActionResultType.FAIL;
                 }
