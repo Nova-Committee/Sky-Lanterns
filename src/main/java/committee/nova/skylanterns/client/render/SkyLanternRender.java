@@ -3,7 +3,7 @@ package committee.nova.skylanterns.client.render;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.client.model.BaseModelCache;
 import committee.nova.skylanterns.client.model.ModModelCache;
 import committee.nova.skylanterns.client.model.PaperLanternPinkModel;
@@ -44,7 +44,7 @@ import static net.minecraft.client.renderer.entity.MobRenderer.renderSide;
  */
 public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
 
-    protected final  PaperLanternPinkModel model = new PaperLanternPinkModel();
+    protected final PaperLanternPinkModel model = new PaperLanternPinkModel();
     private final Minecraft mc = Minecraft.getInstance();
     //public final TextureAtlasSprite LIGHT = mc.getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(new ResourceLocation(Skylanterns.MOD_ID + ":entities/radiant_light.png"));
     public HashMap<Integer, ResourceLocation> TEXTURES = new HashMap<>();
@@ -52,13 +52,13 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
     public SkyLanternRender(EntityRendererManager p_i50965_1_) {
         super(p_i50965_1_);
 
-        TEXTURES.put(DyeColor.ORANGE.getId(), new ResourceLocation(Skylanterns.MOD_ID + ":textures/entities/sky_lantern_orange.png"));
-        TEXTURES.put(DyeColor.PINK.getId(), new ResourceLocation(Skylanterns.MOD_ID + ":textures/entities/sky_lantern_pink.png"));
+        TEXTURES.put(DyeColor.ORANGE.getId(), new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_orange.png"));
+        TEXTURES.put(DyeColor.PINK.getId(), new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_pink.png"));
     }
 
     @Override
     public ResourceLocation getTextureLocation(SkyLanternEntity entity) {
-        return new ResourceLocation(Skylanterns.MOD_ID + ":textures/entities/sky_lantern_"+ entity.getColor().getRegistryPrefix() +".png");
+        return new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_" + entity.getColor().getRegistryPrefix() + ".png");
     }
 
     @Override
@@ -77,13 +77,13 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
         long timeBase = time + (pEntity.getId() * 10L);
         float rate = 5;
 
-        float tiltMax = (float)Math.sin(Math.toRadians(((timeBase) * 1F) % 360)) * 5F;
+        float tiltMax = (float) Math.sin(Math.toRadians(((timeBase) * 1F) % 360)) * 5F;
 
-        float tiltCurX = (float)Math.sin(Math.toRadians(((timeBase) * rate) % 360)) * tiltMax;
-        float tiltCurY = (float)Math.sin(Math.toRadians(((timeBase + 45) * rate) % 360)) * tiltMax;
-        float tiltCurZ = (float)Math.sin(Math.toRadians(((timeBase + 90) * rate) % 360)) * tiltMax;
+        float tiltCurX = (float) Math.sin(Math.toRadians(((timeBase) * rate) % 360)) * tiltMax;
+        float tiltCurY = (float) Math.sin(Math.toRadians(((timeBase + 45) * rate) % 360)) * tiltMax;
+        float tiltCurZ = (float) Math.sin(Math.toRadians(((timeBase + 90) * rate) % 360)) * tiltMax;
 
-        float rotateY = (((float)timeBase * 0.1F) % 360);
+        float rotateY = (((float) timeBase * 0.1F) % 360);
 
         //tiltCur = (float)Math.sin(Math.toRadians(90)) * tiltMax;
         pMatrixStack.mulPose(Vector3f.XP.rotationDegrees(tiltCurX));
@@ -107,9 +107,9 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
 
     }
 
-    private void renderLight(SkyLanternEntity pEntityLiving,  MatrixStack pMatrixStack, int pPackedLight, IRenderTypeBuffer pBuffer) {
+    private void renderLight(SkyLanternEntity pEntityLiving, MatrixStack pMatrixStack, int pPackedLight, IRenderTypeBuffer pBuffer) {
         pMatrixStack.pushPose();
-        pMatrixStack.translate(0, - 0.25, 0);
+        pMatrixStack.translate(0, -0.25, 0);
         float scale = 0.022F;
         pMatrixStack.scale(scale, scale, scale);
         GL11.glNormal3f(0.0F, 1.0F, 0.0F);
@@ -125,20 +125,21 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
         ((IRenderTypeBuffer.Impl) pBuffer).endBatch(renderType);
         pMatrixStack.popPose();
     }
+
     private <E extends Entity> void renderLeash(SkyLanternEntity pEntityLiving, float pPartialTicks, MatrixStack pMatrixStack, IRenderTypeBuffer pBuffer, E pLeashHolder) {
         pMatrixStack.pushPose();
         Vector3d vector3d = pLeashHolder.getRopeHoldPosition(pPartialTicks);
-        double d0 = (double)(MathHelper.lerp(pPartialTicks, pEntityLiving.yBodyRot, pEntityLiving.yBodyRotO) * ((float)Math.PI / 180F)) + (Math.PI / 2D);
+        double d0 = (double) (MathHelper.lerp(pPartialTicks, pEntityLiving.yBodyRot, pEntityLiving.yBodyRotO) * ((float) Math.PI / 180F)) + (Math.PI / 2D);
         Vector3d vector3d1 = pEntityLiving.getLeashOffset();
         double d1 = Math.cos(d0) * vector3d1.z + Math.sin(d0) * vector3d1.x;
         double d2 = Math.sin(d0) * vector3d1.z - Math.cos(d0) * vector3d1.x;
-        double d3 = MathHelper.lerp((double)pPartialTicks, pEntityLiving.xo, pEntityLiving.getX()) + d1;
-        double d4 = MathHelper.lerp((double)pPartialTicks, pEntityLiving.yo, pEntityLiving.getY()) + vector3d1.y;
-        double d5 = MathHelper.lerp((double)pPartialTicks, pEntityLiving.zo, pEntityLiving.getZ()) + d2;
+        double d3 = MathHelper.lerp((double) pPartialTicks, pEntityLiving.xo, pEntityLiving.getX()) + d1;
+        double d4 = MathHelper.lerp((double) pPartialTicks, pEntityLiving.yo, pEntityLiving.getY()) + vector3d1.y;
+        double d5 = MathHelper.lerp((double) pPartialTicks, pEntityLiving.zo, pEntityLiving.getZ()) + d2;
         pMatrixStack.translate(d1, vector3d1.y - pEntityLiving.getEyeHeight(), d2);
-        float f = (float)(vector3d.x - d3);
-        float f1 = (float)(vector3d.y - d4);
-        float f2 = (float)(vector3d.z - d5);
+        float f = (float) (vector3d.x - d3);
+        float f1 = (float) (vector3d.y - d4);
+        float f2 = (float) (vector3d.z - d5);
         float f3 = 0.025F;
         IVertexBuilder ivertexbuilder = pBuffer.getBuffer(RenderType.leash());
         Matrix4f matrix4f = pMatrixStack.last().pose();
@@ -157,8 +158,7 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
     }
 
 
-
-    protected void setupRotations(SkyLanternEntity entity ,MatrixStack pMatrixStack,float pRotationYaw, float pPartialTicks) {
+    protected void setupRotations(SkyLanternEntity entity, MatrixStack pMatrixStack, float pRotationYaw, float pPartialTicks) {
         pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - pRotationYaw));
 
         if (entity.deathTime > 0) {
@@ -221,28 +221,28 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
         float b = 1F;
 
         worldrenderer
-                .vertex((double)(-width / 2 - borderSize), (double)(-borderSize), 0.0D)
+                .vertex((double) (-width / 2 - borderSize), (double) (-borderSize), 0.0D)
                 .uv(f6, f9)
                 .color(r, g, b, 1.0F)
                 //.lightmap(j, k)
                 .endVertex();
 
         worldrenderer
-                .vertex((double)(-width / 2 - borderSize), (double)(height), 0.0D)
+                .vertex((double) (-width / 2 - borderSize), (double) (height), 0.0D)
                 .uv(f6, f8)
                 .color(r, g, b, 1.0F)
                 //.lightmap(j, k)
                 .endVertex();
 
         worldrenderer
-                .vertex((double)(width / 2 + borderSize), (double)(height), 0.0D)
+                .vertex((double) (width / 2 + borderSize), (double) (height), 0.0D)
                 .uv(f7, f8)
                 .color(r, g, b, 1.0F)
                 //.lightmap(j, k)
                 .endVertex();
 
         worldrenderer
-                .vertex((double)(width / 2 + borderSize), (double)(-borderSize), 0.0D)
+                .vertex((double) (width / 2 + borderSize), (double) (-borderSize), 0.0D)
                 .uv(f7, f9)
                 .color(r, g, b, 1.0F)
                 //.lightmap(j, k)

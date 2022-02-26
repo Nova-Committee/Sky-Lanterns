@@ -1,6 +1,6 @@
 package committee.nova.skylanterns.init;
 
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.blocks.LitBlock;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -15,7 +15,7 @@ import net.minecraftforge.registries.IForgeRegistry;
  * Date: 2022/1/24 9:47
  * Version: 1.0
  */
-@Mod.EventBusSubscriber(modid = Skylanterns.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = SkyLanterns.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModBlocks {
 
     public static Block Lit;
@@ -37,8 +37,6 @@ public class ModBlocks {
                 //RegistryUtil.blockItem(Lit)
         );
     }
-
-
 
 
 }

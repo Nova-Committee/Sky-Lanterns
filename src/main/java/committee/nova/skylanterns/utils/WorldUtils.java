@@ -19,7 +19,6 @@ import java.util.Optional;
 public class WorldUtils {
 
 
-
     //@Contract("null, _ -> false")
     public static boolean isBlockLoaded(@Nullable IBlockReader world, @Nonnull BlockPos pos) {
         if (world == null || !World.isInWorldBounds(pos)) {
@@ -32,12 +31,12 @@ public class WorldUtils {
         }
         return true;
     }
+
     /**
      * Gets a blockstate if the location is loaded
      *
      * @param world world
      * @param pos   position
-     *
      * @return optional containing the blockstate if found, empty optional if not loaded
      */
     @Nonnull

@@ -7,5 +7,6 @@ package committee.nova.skylanterns.init;
  * Version: 1.0
  */
 public class ModSprites {
-    private ModSprites(){}
+    private ModSprites() {
+    }
 }

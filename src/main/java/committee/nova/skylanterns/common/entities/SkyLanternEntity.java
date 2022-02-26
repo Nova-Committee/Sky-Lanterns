@@ -1,6 +1,6 @@
 package committee.nova.skylanterns.common.entities;
 
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.configs.ModConfig;
 import committee.nova.skylanterns.init.ModBlocks;
 import committee.nova.skylanterns.init.ModEntities;
@@ -23,6 +23,8 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
@@ -70,10 +72,9 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
 
-
     @Nullable
     public static SkyLanternEntity create(World world, double x, double y, double z, EnumColor c) {
-        SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
+        final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
         if (balloon == null) {
             return null;
         }
@@ -88,7 +89,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     @Nullable
     public static SkyLanternEntity create(LivingEntity entity, EnumColor c) {
-        SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(entity.level);
+        final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(entity.level);
         if (balloon == null) {
             return null;
         }
@@ -108,7 +109,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     @Nullable
     public static SkyLanternEntity create(World world, BlockPos pos, EnumColor c) {
-        SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
+        final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
         if (balloon == null) {
             return null;
         }
@@ -127,16 +128,16 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         return balloon;
     }
 
-    public static AttributeModifierMap.MutableAttribute setAttributes(){
+    public static AttributeModifierMap.MutableAttribute setAttributes() {
         return MobEntity.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 30.0D);
     }
 
-    public static double processYSpeed(double y, Random random){
+    public static double processYSpeed(double y, Random random) {
         double a = 0;
-        if(y == 0) return 0;
+        if (y == 0) return 0;
         a = Math.min(y + random.nextDouble() * 0.1, 0.2F);
-        Skylanterns.LOGGER.info(a);
+        SkyLanterns.LOGGER.info(a);
         return a;
     }
 
@@ -171,9 +172,9 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
             return;
         } else {
             if (level.random.nextInt(5) == 0) {
-                double d0 = xo;// + 0.5D;
-                double d1 = yo + 0.15D;
-                double d2 = zo;// + 0.5D;
+                final double d0 = xo;// + 0.5D;
+                final double d1 = yo + 0.15D;
+                final double d2 = zo;// + 0.5D;
                 level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                 level.addParticle(ParticleTypes.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
             }
@@ -193,7 +194,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         } else {
             if (hasCachedEntity) {
                 if (level instanceof ServerWorld) {
-                    Entity entity = ((ServerWorld) level).getEntity(cachedEntityUUID);
+                    final Entity entity = ((ServerWorld) level).getEntity(cachedEntityUUID);
                     if (entity instanceof LivingEntity) {
                         latchedEntity = (LivingEntity) entity;
                     }
@@ -219,10 +220,9 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         }
 
 
-
         if (!level.isClientSide) {
             if (latched != null) {
-                Optional<BlockState> blockState = WorldUtils.getBlockState(level, latched);
+                final Optional<BlockState> blockState = WorldUtils.getBlockState(level, latched);
                 if (blockState.isPresent() && blockState.get().isAir(level, latched)) {
                     latched = null;
                     entityData.set(IS_LATCHED, (byte) 0);
@@ -238,13 +238,13 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         if (!isLatched()) {
 
 
-            Random rnd = this.random;
-            Vector3d motion = getDeltaMovement();
+            final Random rnd = this.random;
+            Vector3d motion;
 
             {
                 motion = getDeltaMovement();
 
-                if (motion.y() < 0.05D ) {
+                if (motion.y() < 0.05D) {
                     if (tickCount >= 40) {
                         motion = new Vector3d(motion.x(), motion.y() + rnd.nextDouble() * 0.006D, motion.z());
                     } else {
@@ -259,13 +259,13 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
                     long time = (this.getId() * 3L) + level.getGameTime() * 3;
                     float timeClampSpeed = (((time)) % 360) - 180;
 
-                    float tiltMax = (float)Math.toRadians(timeClampSpeed);
+                    float tiltMax = (float) Math.toRadians(timeClampSpeed);
 
                     double speed = 0.006;
                     if (tickCount < 40) {
                         speed = 0.004F;
                     }
-                    motion = new Vector3d(motion.x() - Math.cos(tiltMax) * speed , motion.y() , motion.z() + Math.sin(tiltMax) * speed);
+                    motion = new Vector3d(motion.x() - Math.cos(tiltMax) * speed, motion.y(), motion.z() + Math.sin(tiltMax) * speed);
                 }
             }
 
@@ -278,8 +278,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         } else if (latched != null) {
             setDeltaMovement(0, 0, 0);
         } else if (latchedEntity != null && latchedEntity.getHealth() > 0) {
-            int floor = getFloor(latchedEntity);
-            Vector3d motion = latchedEntity.getDeltaMovement();
+            final int floor = getFloor(latchedEntity);
+            final Vector3d motion = latchedEntity.getDeltaMovement();
             if (latchedEntity.getY() - (floor + 1) < -0.1) {
                 latchedEntity.setDeltaMovement(motion.x(), Math.max(0.04, motion.y() * 1.015), motion.z());
             } else if (latchedEntity.getY() - (floor + 1) > 0.1) {
@@ -292,7 +292,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
         if (ModConfig.COMMON.lightUpdateRate.get() != -1) {
             if (!this.level.isClientSide && (ModConfig.COMMON.lightUpdateRate.get() <= 0 || level.getGameTime() % ModConfig.COMMON.lightUpdateRate.get() == 0)) {
-                double dist = distanceToSqr(posLight.getX(), posLight.getY(), posLight.getZ());
+                final double dist = distanceToSqr(posLight.getX(), posLight.getY(), posLight.getZ());
                 if (dist >= ModConfig.COMMON.lightUpdateDistanceAccuracy.get() || level.getBlockState(posLight).getBlock() != ModBlocks.Lit) {
                     //remove old if needed
                     clearCurrentLightBlock();
@@ -319,7 +319,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     private int getFloor(LivingEntity entity) {
-        BlockPos pos = new BlockPos(entity.position());
+        final BlockPos pos = new BlockPos(entity.position());
         for (BlockPos posi = pos; posi.getY() > 0; posi = posi.below()) {
             if (posi.getY() < level.getMaxBuildHeight() && !level.isEmptyBlock(posi)) {
                 return posi.getY() + 1 + (entity instanceof PlayerEntity ? 1 : 0);
@@ -331,7 +331,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     public void clearCurrentLightBlock() {
         if (!posLight.equals(BlockPos.ZERO)) {
-            BlockState state = level.getBlockState(posLight);
+            final BlockState state = level.getBlockState(posLight);
             if (state.getBlock() == ModBlocks.Lit) {
                 //System.out.println("set " + posLight + " to air");
                 level.setBlockAndUpdate(posLight, Blocks.AIR.defaultBlockState());
@@ -354,8 +354,6 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     protected boolean isMovementNoisy() {
         return false;
     }
-
-
 
 
     @Override
@@ -385,7 +383,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         compound.putInt("light_Z", posLight.getZ());
 
         if (this.isLeashed() && getLeashHolder() == null) {
-            CompoundNBT tag = ObfuscationReflectionHelper.getPrivateValue(MobEntity.class, this, "field_110170_bx");
+            final CompoundNBT tag = ObfuscationReflectionHelper.getPrivateValue(MobEntity.class, this, "field_110170_bx");
             if (tag != null) {
                 //System.out.println("writing leashNBTTag to disk for vanilla bug fix: " + tag);
                 compound.put("Leash", tag);
@@ -396,16 +394,15 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     @Override
     protected void tickLeash() {
 
-        if (this.isLeashed() && this.getLeashHolder() != null && this.getLeashHolder().level == this.level)
-        {
-            Entity entity = this.getLeashHolder();
+        if (this.isLeashed() && this.getLeashHolder() != null && this.getLeashHolder().level == this.level) {
+            final Entity entity = this.getLeashHolder();
             this.restrictTo(new BlockPos(entity.getX(), entity.getY(), entity.getZ()), 5);
-            float f = this.distanceTo(entity);
+            final float f = this.distanceTo(entity);
             this.onLeashDistance(f);
             if (f > 4.0F) {
-                double d0 = (entity.getX() - this.getX()) / (double)f;
-                double d1 = (entity.getY() - this.getY()) / (double)f;
-                double d2 = (entity.getZ() - this.getZ()) / (double)f;
+                double d0 = (entity.getX() - this.getX()) / (double) f;
+                double d1 = (entity.getY() - this.getY()) / (double) f;
+                double d2 = (entity.getZ() - this.getZ()) / (double) f;
                 this.setDeltaMovement(this.getDeltaMovement().add(Math.copySign(d0 * d0 * 0.1D, d0), Math.copySign(d1 * d1 * 0.03D, d1), Math.copySign(d2 * d2 * 0.1D, d2)));
             }
         }
@@ -418,6 +415,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         return 15728880;
     }
 
+    @Nonnull
     @Override
     public IPacket<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
@@ -452,7 +450,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     public void readSpawnData(PacketBuffer data) {
         setPos(data.readDouble(), data.readDouble(), data.readDouble());
         color = data.readEnum(EnumColor.class);
-        byte type = data.readByte();
+        final byte type = data.readByte();
         if (type == 1) {
             latched = data.readBlockPos();
         } else if (type == 2) {
@@ -488,7 +486,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     private void pop() {
         if (!level.isClientSide) {
-            RedstoneParticleData redstoneParticleData = new RedstoneParticleData(color.getColor(0), color.getColor(1), color.getColor(2), 1.0F);
+            final RedstoneParticleData redstoneParticleData = new RedstoneParticleData(color.getColor(0), color.getColor(1), color.getColor(2), 1.0F);
             for (int i = 0; i < 10; i++) {
                 ((ServerWorld) level).sendParticles(redstoneParticleData, getX() + 0.6 * random.nextFloat() - 0.3, getY() + 0.6 * random.nextFloat() - 0.3,
                         getZ() + 0.6 * random.nextFloat() - 0.3, 1, 0, 0, 0, 0);
@@ -519,8 +517,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     private AxisAlignedBB getBoundingBox(EntitySize size, double x, double y, double z) {
-        float f = size.width / 2F;
-        double posY = y - 0.5F;
+        final float f = size.width / 2F;
+        final double posY = y - 0.5F;
         return new AxisAlignedBB(new Vector3d(x - f, posY, z - f), new Vector3d(x + f, posY + size.height, z + f));
     }
 
@@ -532,7 +530,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     @Override
     public void setLocationFromBoundingbox() {
-        AxisAlignedBB axisalignedbb = getBoundingBox();
+        final AxisAlignedBB axisalignedbb = getBoundingBox();
         //Offset the y value upwards to match where it actually should be relative to the bounding box
         setPosRaw((axisalignedbb.minX + axisalignedbb.maxX) / 2D, axisalignedbb.minY + 0.5F, (axisalignedbb.minZ + axisalignedbb.maxZ) / 2D);
         if (isAddedToWorld() && !this.level.isClientSide && level instanceof ServerWorld) {
@@ -553,7 +551,6 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
 
-
     @Override
     public void remove() {
         super.remove();
@@ -563,6 +560,13 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         if (latchedEntity != null) {
             latchedEntity.hasImpulse = false;
         }
+    }
+
+    public void setUnlatched() {
+        latched = null;
+        entityData.set(IS_LATCHED, (byte) 0);
+        if (!level.isClientSide)
+            level.playSound(null, this, SoundEvents.ARMOR_EQUIP_LEATHER, SoundCategory.NEUTRAL, 1F, 1F);
     }
 
 

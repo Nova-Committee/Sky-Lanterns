@@ -1,6 +1,6 @@
 package committee.nova.skylanterns.client.model;
 
-import committee.nova.skylanterns.Skylanterns;
+import committee.nova.skylanterns.SkyLanterns;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.renderer.model.BlockModel;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -30,7 +30,7 @@ public class BaseModelCache {
     public static IBakedModel getBakedModel(ModelBakeEvent evt, ResourceLocation rl) {
         IBakedModel bakedModel = evt.getModelRegistry().get(rl);
         if (bakedModel == null) {
-            Skylanterns.LOGGER.error("Baked model doesn't exist: {}", rl.toString());
+            SkyLanterns.LOGGER.error("Baked model doesn't exist: {}", rl.toString());
             return evt.getModelManager().getMissingModel();
         }
         return bakedModel;
