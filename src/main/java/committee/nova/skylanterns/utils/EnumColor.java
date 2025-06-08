@@ -1,10 +1,11 @@
 package committee.nova.skylanterns.utils;
 
-import net.minecraft.block.material.MaterialColor;
-import net.minecraft.item.DyeColor;
-import net.minecraft.item.Item;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.text.Color;
+import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.tags.TagKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nonnull;
@@ -17,47 +18,47 @@ import javax.annotation.Nullable;
  * Version: 1.0
  */
 public enum EnumColor implements IIncrementalEnum<EnumColor> {
-    BLACK("\u00a70", "Black", "black", new int[]{64, 64, 64}, DyeColor.BLACK),
-    DARK_BLUE("\u00a71", "Blue", "blue", new int[]{54, 107, 208}, DyeColor.BLUE),
-    DARK_GREEN("\u00a72", "Green", "green", new int[]{89, 193, 95}, DyeColor.GREEN),
-    DARK_AQUA("\u00a73", "Cyan", "cyan", new int[]{0, 243, 208}, DyeColor.CYAN),
-    DARK_RED("\u00a74", "Dark Red", "dark_red", new int[]{201, 7, 31}, MaterialColor.NETHER, Tags.Items.DYES_RED, null),
-    PURPLE("\u00a75", "Purple", "purple", new int[]{164, 96, 217}, DyeColor.PURPLE),
-    ORANGE("\u00a76", "Orange", "orange", new int[]{255, 161, 96}, DyeColor.ORANGE),
-    GRAY("\u00a77", "Light Gray", "light_gray", new int[]{207, 207, 207}, DyeColor.LIGHT_GRAY),
-    DARK_GRAY("\u00a78", "Gray", "gray", new int[]{122, 122, 122}, DyeColor.GRAY),
-    INDIGO("\u00a79", "Light Blue", "light_blue", new int[]{85, 158, 255}, DyeColor.LIGHT_BLUE),
-    BRIGHT_GREEN("\u00a7a", "Lime", "lime", new int[]{117, 255, 137}, DyeColor.LIME),
-    AQUA("\u00a7b", "Aqua", "aqua", new int[]{48, 255, 249}, MaterialColor.COLOR_LIGHT_BLUE, Tags.Items.DYES_LIGHT_BLUE, null),
-    RED("\u00a7c", "Red", "red", new int[]{255, 56, 60}, DyeColor.RED),
-    PINK("\u00a7d", "Magenta", "magenta", new int[]{213, 94, 203}, DyeColor.MAGENTA),
-    YELLOW("\u00a7e", "Yellow", "yellow", new int[]{255, 221, 79}, DyeColor.YELLOW),
-    WHITE("\u00a7f", "White", "white", new int[]{255, 255, 255}, DyeColor.WHITE),
+    BLACK(ChatFormatting.BLACK, "Black", "black", new int[]{64, 64, 64}, DyeColor.BLACK),
+    DARK_BLUE(ChatFormatting.DARK_BLUE, "Blue", "blue", new int[]{54, 107, 208}, DyeColor.BLUE),
+    DARK_GREEN(ChatFormatting.DARK_GREEN, "Green", "green", new int[]{89, 193, 95}, DyeColor.GREEN),
+    DARK_AQUA(ChatFormatting.DARK_AQUA, "Cyan", "cyan", new int[]{0, 243, 208}, DyeColor.CYAN),
+    DARK_RED(ChatFormatting.DARK_RED, "Dark Red", "dark_red", new int[]{201, 7, 31}, MaterialColor.NETHER, Tags.Items.DYES_RED, null),
+    PURPLE(ChatFormatting.DARK_PURPLE, "Purple", "purple", new int[]{164, 96, 217}, DyeColor.PURPLE),
+    ORANGE(ChatFormatting.GOLD, "Orange", "orange", new int[]{255, 161, 96}, DyeColor.ORANGE),
+    GRAY(ChatFormatting.GRAY, "Light Gray", "light_gray", new int[]{207, 207, 207}, DyeColor.LIGHT_GRAY),
+    DARK_GRAY(ChatFormatting.DARK_GRAY, "Gray", "gray", new int[]{122, 122, 122}, DyeColor.GRAY),
+    INDIGO(ChatFormatting.BLUE, "Light Blue", "light_blue", new int[]{85, 158, 255}, DyeColor.LIGHT_BLUE),
+    BRIGHT_GREEN(ChatFormatting.GREEN, "Lime", "lime", new int[]{117, 255, 137}, DyeColor.LIME),
+    AQUA(ChatFormatting.AQUA, "Aqua", "aqua", new int[]{48, 255, 249}, MaterialColor.COLOR_LIGHT_BLUE, Tags.Items.DYES_LIGHT_BLUE, null),
+    RED(ChatFormatting.RED, "Red", "red", new int[]{255, 56, 60}, DyeColor.RED),
+    PINK(ChatFormatting.LIGHT_PURPLE, "Magenta", "magenta", new int[]{213, 94, 203}, DyeColor.MAGENTA),
+    YELLOW(ChatFormatting.YELLOW, "Yellow", "yellow", new int[]{255, 221, 79}, DyeColor.YELLOW),
+    WHITE(ChatFormatting.WHITE, "White", "white", new int[]{255, 255, 255}, DyeColor.WHITE),
     //Extras for dye-completeness
-    BROWN("\u00a76", "Brown", "brown", new int[]{161, 118, 73}, DyeColor.BROWN),
-    BRIGHT_PINK("\u00a7d", "Pink", "pink", new int[]{255, 188, 196}, DyeColor.PINK);
+    BROWN(ChatFormatting.GOLD, "Brown", "brown", new int[]{161, 118, 73}, DyeColor.BROWN),
+    BRIGHT_PINK(ChatFormatting.LIGHT_PURPLE, "Pink", "pink", new int[]{255, 188, 196}, DyeColor.PINK);
 
     private static final EnumColor[] COLORS = values();
     /**
      * The color code that will be displayed
      */
-    public final String code;
+    public final ChatFormatting chatFormatting;
     private final String englishName;
     private final String registryPrefix;
     @Nullable
     private final DyeColor dyeColor;
     private final MaterialColor mapColor;
-    private final ITag<Item> dyeTag;
+    private final TagKey<Item> dyeTag;
     private int[] rgbCode;
-    private Color color;
+    private int colorValue;
 
-    EnumColor(String s, String englishName, String registryPrefix, int[] rgbCode, DyeColor dyeColor) {
-        this(s, englishName, registryPrefix, rgbCode, dyeColor.getMaterialColor(), dyeColor.getTag(), dyeColor);
+    EnumColor(ChatFormatting chatFormatting, String englishName, String registryPrefix, int[] rgbCode, DyeColor dyeColor) {
+        this(chatFormatting, englishName, registryPrefix, rgbCode, dyeColor.getMaterialColor(), dyeColor.getTag(), dyeColor);
     }
 
-    EnumColor(String code, String englishName, String registryPrefix, int[] rgbCode, MaterialColor mapColor, ITag<Item> dyeTag,
+    EnumColor(ChatFormatting chatFormatting, String englishName, String registryPrefix, int[] rgbCode, MaterialColor mapColor, TagKey<Item> dyeTag,
               @Nullable DyeColor dyeColor) {
-        this.code = code;
+        this.chatFormatting = chatFormatting;
         this.englishName = englishName;
         this.dyeColor = dyeColor;
         this.registryPrefix = registryPrefix;
@@ -97,19 +98,6 @@ public enum EnumColor implements IIncrementalEnum<EnumColor> {
     }
 
     /**
-     * Gets the item tag that corresponds to the dye this color corresponds to.
-     */
-    @Deprecated//TODO - 1.18: Remove this
-    public ITag<Item> getDyeTag() {
-        return dyeTag;
-    }
-
-    @Deprecated//TODO - 1.18: Remove this
-    public boolean hasDyeName() {
-        return dyeColor != null;
-    }
-
-    /**
      * Gets the corresponding dye color or {@code null} if there isn't one.
      */
     @Nullable
@@ -130,13 +118,20 @@ public enum EnumColor implements IIncrementalEnum<EnumColor> {
     /**
      * Gets the corresponding text color for this color.
      */
-    public Color getColor() {
-        return color;
+    public int getColor(Vec3 index) {
+        return colorValue;
+    }
+
+    /**
+     * Gets the ChatFormatting code for this color.
+     */
+    public String getCode() {
+        return chatFormatting.toString();
     }
 
     @Override
     public String toString() {
-        return code;
+        return chatFormatting.toString();
     }
 
     @Nonnull
@@ -153,7 +148,7 @@ public enum EnumColor implements IIncrementalEnum<EnumColor> {
      */
     public void setColorFromAtlas(int[] color) {
         rgbCode = color;
-        this.color = Color.fromRgb(rgbCode[0] << 16 | rgbCode[1] << 8 | rgbCode[2]);
+        this.colorValue = (rgbCode[0] << 16) | (rgbCode[1] << 8) | rgbCode[2];
     }
 
     /**

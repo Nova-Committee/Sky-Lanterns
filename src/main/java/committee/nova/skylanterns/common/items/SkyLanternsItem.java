@@ -3,16 +3,16 @@ package committee.nova.skylanterns.common.items;
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
 import committee.nova.skylanterns.init.ModTabs;
 import committee.nova.skylanterns.utils.EnumColor;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -29,13 +29,13 @@ public class SkyLanternsItem extends Item {
     private final EnumColor color = EnumColor.ORANGE;
 
     public SkyLanternsItem(EnumColor color) {
-        super(new Properties().stacksTo(16).tab(ModTabs.tab));
+        super(new Properties().stacksTo(16).tab(ModTabs.TAB));
     }
 
 
     @Override
-    public ActionResultType useOn(ItemUseContext pContext) {
-        final World world = pContext.getLevel();
+    public InteractionResult useOn(UseOnContext pContext) {
+        final Level world = pContext.getLevel();
         final BlockPos pos = pContext.getClickedPos();
         if (!world.isClientSide) {
             final ItemStack stack = pContext.getItemInHand();
@@ -44,39 +44,39 @@ public class SkyLanternsItem extends Item {
 
                 final SkyLanternEntity entity = SkyLanternEntity.create(world, new BlockPos(pos.getX(), pos.getY() + 0.5, pos.getZ()), color);
                 if (entity == null) {
-                    return ActionResultType.FAIL;
+                    return InteractionResult.FAIL;
                 }
                 world.addFreshEntity(entity);
                 stack.shrink(1);
             }
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
     @Nonnull
     @Override
-    public ActionResultType interactLivingEntity(@Nonnull ItemStack stack, PlayerEntity player, @Nonnull LivingEntity entity, @Nonnull Hand hand) {
+    public InteractionResult interactLivingEntity(@Nonnull ItemStack stack, Player player, @Nonnull LivingEntity entity, @Nonnull InteractionHand hand) {
         if (player.isShiftKeyDown()) {
             if (!player.level.isClientSide) {
-                final AxisAlignedBB bound = new AxisAlignedBB(entity.getX() - 0.2, entity.getY() - 0.5, entity.getZ() - 0.2,
+                final AABB bound = new AABB(entity.getX() - 0.2, entity.getY() - 0.5, entity.getZ() - 0.2,
                         entity.getX() + 0.2, entity.getY() + entity.getDimensions(entity.getPose()).height + 4, entity.getZ() + 0.2);
                 final List<SkyLanternEntity> balloonsNear = player.level.getEntitiesOfClass(SkyLanternEntity.class, bound);
                 for (SkyLanternEntity balloon : balloonsNear) {
                     if (balloon.latchedEntity == entity) {
-                        return ActionResultType.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                 }
                 final SkyLanternEntity balloon = SkyLanternEntity.create(entity, color);
                 if (balloon == null) {
-                    return ActionResultType.FAIL;
+                    return InteractionResult.FAIL;
                 }
                 player.level.addFreshEntity(balloon);
                 stack.shrink(1);
             }
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
 }

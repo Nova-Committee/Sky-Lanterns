@@ -1,15 +1,17 @@
 package committee.nova.skylanterns.utils;
 
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.init.ModTabs;
-import net.minecraft.block.Block;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.IContainerFactory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.network.IContainerFactory;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -17,19 +19,19 @@ import java.util.function.Supplier;
 public class RegistryUtil {
 
     @SuppressWarnings("unchecked")
-    public static <T extends TileEntity> TileEntityType<T> build(Supplier<T> factory, String registryName, Block... block) {
+    public static <T extends BlockEntity> BlockEntityType<T> build(BlockEntityType.BlockEntitySupplier<? extends T> factory, String registryName, Block... block) {
         //noinspection ConstantConditions
-        return (TileEntityType<T>) TileEntityType.Builder.of(factory, block).build(null).setRegistryName(registryName);
+        return (BlockEntityType<T>) BlockEntityType.Builder.of(factory, block).build(null).setRegistryName(registryName);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends TileEntity> TileEntityType<T> build(Supplier<T> factory, ResourceLocation registryName, Block... block) {
+    public static <T extends BlockEntity> BlockEntityType<T> build(BlockEntityType.BlockEntitySupplier<? extends T> factory, ResourceLocation registryName, Block... block) {
         //noinspection ConstantConditions
-        return (TileEntityType<T>) TileEntityType.Builder.of(factory, block).build(null).setRegistryName(registryName);
+        return (BlockEntityType<T>) BlockEntityType.Builder.of(factory, block).build(null).setRegistryName(registryName);
     }
 
     public static Item blockItem(Block block) {
-        return blockItem(block, new Item.Properties().tab(ModTabs.tab));
+        return blockItem(block, new Item.Properties().tab(ModTabs.TAB));
     }
 
     private static Item blockItem(Block block, Item.Properties properties) {
@@ -38,7 +40,10 @@ public class RegistryUtil {
 
 
     @SuppressWarnings("unchecked")
-    public static <T extends Container> ContainerType<T> registerContainer(String name, IContainerFactory<T> containerFactory) {
-        return (ContainerType<T>) new ContainerType<>(containerFactory).setRegistryName(name);
+    public static <T extends AbstractContainerMenu> MenuType<T> registerContainer(String name, MenuType.MenuSupplier<T> factory) {
+        MenuType<T> type = new MenuType<>(factory);
+        type.setRegistryName(new ResourceLocation(SkyLanterns.MOD_ID, name));
+        return type;
     }
+
 }

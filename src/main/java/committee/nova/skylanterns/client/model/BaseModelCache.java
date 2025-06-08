@@ -2,15 +2,15 @@ package committee.nova.skylanterns.client.model;
 
 import committee.nova.skylanterns.SkyLanterns;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.client.renderer.model.BlockModel;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.IUnbakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.SimpleModelTransform;
+import net.minecraftforge.client.model.SimpleModelState;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.client.model.obj.OBJModel;
@@ -27,8 +27,8 @@ import java.util.function.Function;
 public class BaseModelCache {
     private final Map<ResourceLocation, ModelData> modelMap = new Object2ObjectOpenHashMap<>();
 
-    public static IBakedModel getBakedModel(ModelBakeEvent evt, ResourceLocation rl) {
-        IBakedModel bakedModel = evt.getModelRegistry().get(rl);
+    public static BakedModel getBakedModel(ModelBakeEvent evt, ResourceLocation rl) {
+        BakedModel bakedModel = evt.getModelRegistry().get(rl);
         if (bakedModel == null) {
             SkyLanterns.LOGGER.error("Baked model doesn't exist: {}", rl.toString());
             return evt.getModelManager().getMissingModel();
@@ -61,7 +61,7 @@ public class BaseModelCache {
     public static class ModelData {
 
         protected final ResourceLocation rl;
-        private final Map<IModelConfiguration, IBakedModel> bakedMap = new Object2ObjectOpenHashMap<>();
+        private final Map<IModelConfiguration, BakedModel> bakedMap = new Object2ObjectOpenHashMap<>();
         protected IModelGeometry<?> model;
 
         protected ModelData(ResourceLocation rl) {
@@ -75,8 +75,8 @@ public class BaseModelCache {
         protected void setup() {
         }
 
-        public IBakedModel bake(IModelConfiguration config) {
-            return bakedMap.computeIfAbsent(config, c -> model.bake(c, ModelLoader.instance(), ModelLoader.defaultTextureGetter(), SimpleModelTransform.IDENTITY, ItemOverrideList.EMPTY, rl));
+        public BakedModel bake(IModelConfiguration config) {
+            return bakedMap.computeIfAbsent(config, c -> model.bake(c, ForgeModelBakery.instance(), ForgeModelBakery.defaultTextureGetter(), SimpleModelState.IDENTITY, ItemOverrides.EMPTY, rl));
         }
 
         public IModelGeometry<?> getModel() {
@@ -99,7 +99,7 @@ public class BaseModelCache {
 
     public static class JSONModelData extends ModelData {
 
-        private IBakedModel bakedModel;
+        private BakedModel bakedModel;
 
         private JSONModelData(ResourceLocation rl) {
             super(rl);
@@ -109,7 +109,7 @@ public class BaseModelCache {
         protected void reload(ModelBakeEvent evt) {
             super.reload(evt);
             bakedModel = BaseModelCache.getBakedModel(evt, rl);
-            IUnbakedModel unbaked = evt.getModelLoader().getModel(rl);
+            UnbakedModel unbaked = evt.getModelLoader().getModel(rl);
             if (unbaked instanceof BlockModel) {
                 model = ((BlockModel) unbaked).customData.getCustomGeometry();
             }
@@ -117,10 +117,10 @@ public class BaseModelCache {
 
         @Override
         protected void setup() {
-            ModelLoader.addSpecialModel(rl);
+            ForgeModelBakery.addSpecialModel(rl);
         }
 
-        public IBakedModel getBakedModel() {
+        public BakedModel getBakedModel() {
             return bakedModel;
         }
     }
