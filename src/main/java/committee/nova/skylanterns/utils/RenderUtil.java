@@ -38,12 +38,11 @@ public class RenderUtil {
             if (type != null) {
                 type.end(buf, 0, 0, 0);
             } else {
-                buf.end();
-                BufferUploader.end(buf);
+                BufferBuilder.RenderedBuffer renderedBuffer = buf.end();
+                BufferUploader.draw(renderedBuffer);
             }
         }
     }
-
     public static void refreshDrawing(VertexConsumer vb, RenderType type) {
         if (vb instanceof BufferBuilder) {
             type.end((BufferBuilder) vb, 0, 0, 0);

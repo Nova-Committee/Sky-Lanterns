@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.floats.FloatConsumer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.shorts.ShortConsumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -14,8 +15,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -177,10 +176,10 @@ public class TagUtils {
         }
     }
 
-    public static <REG extends IForgeRegistryEntry<REG>> void setRegistryEntryIfPresentElse(CompoundTag tag, String key, IForgeRegistry<REG> registry,
-                                                                                            Consumer<REG> setter, Runnable notPresent) {
+    public static <REG> void setRegistryEntryIfPresentElse(CompoundTag tag, String key, Registry<REG> registry,
+                                                           Consumer<REG> setter, Runnable notPresent) {
         setResourceLocationIfPresentElse(tag, key, rl -> {
-            REG reg = registry.getValue(rl);
+            REG reg = registry.get(rl);
             if (reg == null) {
                 notPresent.run();
             } else {
@@ -195,11 +194,11 @@ public class TagUtils {
         }
     }
 
-    public static <V extends IForgeRegistryEntry<V>> V readRegistryEntry(CompoundTag tag, String key, IForgeRegistry<V> registry, V fallback) {
+    public static <V> V readRegistryEntry(CompoundTag tag, String key, Registry<V> registry, V fallback) {
         if (tag.contains(key, Tag.TAG_STRING)) {
             ResourceLocation rl = ResourceLocation.tryParse(tag.getString(key));
             if (rl != null) {
-                V result = registry.getValue(rl);
+                V result = registry.get(rl);
                 if (result != null) {
                     return result;
                 }
@@ -207,4 +206,5 @@ public class TagUtils {
         }
         return fallback;
     }
+
 }
