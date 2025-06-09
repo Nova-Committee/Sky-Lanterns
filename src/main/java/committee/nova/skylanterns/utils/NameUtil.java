@@ -1,6 +1,7 @@
 package committee.nova.skylanterns.utils;
 
-import net.minecraft.util.ResourceLocation;
+
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Description:

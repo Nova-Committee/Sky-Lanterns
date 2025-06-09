@@ -1,8 +1,10 @@
 package committee.nova.skylanterns;
 
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
+import committee.nova.skylanterns.init.ModBlocks;
 import committee.nova.skylanterns.init.ModEntities;
-import net.minecraft.util.ResourceLocation;
+import committee.nova.skylanterns.init.ModItems;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -19,8 +21,12 @@ public class SkyLanterns {
 
     public SkyLanterns() {
         final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModEntities.ENTITIES.register(modEventBus);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::addAttributes);
+
+        ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
+        ModEntities.register(modEventBus);
+
+        modEventBus.addListener(this::addAttributes);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -30,8 +36,6 @@ public class SkyLanterns {
     }
 
     private void addAttributes(final EntityAttributeCreationEvent event) {
-        event.put(ModEntities.SkyLantern.get(), SkyLanternEntity.setAttributes().build());
+        event.put(ModEntities.SKY_LANTERN.get(), SkyLanternEntity.setAttributes().build());
     }
-
-
 }

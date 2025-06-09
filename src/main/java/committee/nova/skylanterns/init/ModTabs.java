@@ -1,9 +1,7 @@
 package committee.nova.skylanterns.init;
 
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-
-import javax.annotation.Nonnull;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Description:
@@ -13,12 +11,10 @@ import javax.annotation.Nonnull;
  */
 public class ModTabs {
 
-    public static ItemGroup tab = new ItemGroup("tabSkyLanterns") {
-        @Nonnull
+    public static final CreativeModeTab TAB = new CreativeModeTab("tab_sky_lanterns") {
         @Override
         public ItemStack makeIcon() {
-            return new ItemStack(ModItems.SkyLanterns_orange);
+            return new ItemStack(ModItems.SKY_LANTERN_ORANGE.get());
         }
-
     };
 }

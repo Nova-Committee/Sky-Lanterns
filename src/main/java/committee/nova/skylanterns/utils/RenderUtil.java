@@ -1,12 +1,7 @@
 package committee.nova.skylanterns.utils;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.BufferBuilder;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldVertexBufferUploader;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -19,15 +14,15 @@ import java.util.function.Function;
  */
 public class RenderUtil {
 
-    public static void draw(int drawMode, VertexFormat format, Consumer<BufferBuilder> fn) {
+    public static void draw(VertexFormat.Mode drawMode, VertexFormat format, Consumer<BufferBuilder> fn) {
         draw(drawMode, format, bufferBuilder -> {
             fn.accept(bufferBuilder);
             return null;
         });
     }
 
-    public static <R> R draw(int drawMode, VertexFormat format, Function<BufferBuilder, R> fn) {
-        BufferBuilder buf = Tessellator.getInstance().getBuilder();
+    public static <R> R draw(VertexFormat.Mode drawMode, VertexFormat format, Function<BufferBuilder, R> fn) {
+        BufferBuilder buf = Tesselator.getInstance().getBuilder();
         buf.begin(drawMode, format);
         R result = fn.apply(buf);
         finishDrawing(buf);
@@ -44,12 +39,12 @@ public class RenderUtil {
                 type.end(buf, 0, 0, 0);
             } else {
                 buf.end();
-                WorldVertexBufferUploader.end(buf);
+                BufferUploader.end(buf);
             }
         }
     }
 
-    public static void refreshDrawing(IVertexBuilder vb, RenderType type) {
+    public static void refreshDrawing(VertexConsumer vb, RenderType type) {
         if (vb instanceof BufferBuilder) {
             type.end((BufferBuilder) vb, 0, 0, 0);
             ((BufferBuilder) vb).begin(type.mode(), type.format());

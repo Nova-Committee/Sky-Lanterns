@@ -2,16 +2,18 @@ package committee.nova.skylanterns.init.handler;
 
 import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.client.model.ModModelCache;
+import committee.nova.skylanterns.client.model.PaperLanternPinkModel;
 import committee.nova.skylanterns.client.render.SkyLanternRender;
 import committee.nova.skylanterns.init.ModEntities;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
@@ -34,6 +36,11 @@ public class ClientEventHandler {
 
     }
 
+    @SubscribeEvent
+    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(PaperLanternPinkModel.LAYER_LOCATION, PaperLanternPinkModel::createBodyLayer);
+    }
+
 
     @SubscribeEvent
     public static void modelRegEvent(ModelRegistryEvent event) {
@@ -47,8 +54,9 @@ public class ClientEventHandler {
 
 
     @SubscribeEvent
-    public static void onClientSetUpEvent(FMLClientSetupEvent event) {
-        RenderingRegistry.registerEntityRenderingHandler(ModEntities.SkyLantern.get(), SkyLanternRender::new);
-
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            EntityRenderers.register(ModEntities.SKY_LANTERN.get(), SkyLanternRender::new);
+        });
     }
 }
