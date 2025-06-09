@@ -21,6 +21,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -55,6 +56,12 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     private static final EntityDataAccessor<Integer> LATCHED_Y = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LATCHED_Z = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LATCHED_ID = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
+
+    private Vec3 windDirection = Vec3.ZERO;
+    private int windChangeTimer = 0;
+    private double windStrength = 0.0;
+    private Vec3 driftVelocity = Vec3.ZERO;
+    private int driftChangeTimer = 0;
 
     public BlockPos posLight = new BlockPos(BlockPos.ZERO);
     public LivingEntity latchedEntity;
@@ -173,9 +180,9 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
             return;
         } else {
             if (level.random.nextInt(5) == 0) {
-                final double d0 = xo;// + 0.5D;
+                final double d0 = xo;
                 final double d1 = yo + 0.15D;
-                final double d2 = zo;// + 0.5D;
+                final double d2 = zo;
                 level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                 level.addParticle(ParticleTypes.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
             }
@@ -237,40 +244,70 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         }
 
         if (!isLatched()) {
+            final RandomSource rnd = this.random;
+            Vec3 motion = getDeltaMovement();
 
-
-            final Random rnd = this.random;
-            Vec3 motion;
-
-            {
-                motion = getDeltaMovement();
-
-                if (motion.y() < 0.05D) {
-                    if (tickCount >= 40) {
-                        motion = new Vec3(motion.x(), motion.y() + rnd.nextDouble() * 0.006D, motion.z());
-                    } else {
-                        motion = new Vec3(motion.x(), motion.y() + rnd.nextDouble() * 0.003D, motion.z());
-                    }
+            // 基础上升力
+            if (motion.y() < 0.05D) {
+                if (tickCount >= 40) {
+                    motion = new Vec3(motion.x(), motion.y() + rnd.nextDouble() * 0.006D, motion.z());
+                } else {
+                    motion = new Vec3(motion.x(), motion.y() + rnd.nextDouble() * 0.003D, motion.z());
                 }
-                setDeltaMovement(motion);
-                move(MoverType.SELF, getDeltaMovement());
+            }
 
-                motion = getDeltaMovement();
-                if (!level.isClientSide && !this.isLeashed() && this.getLeashHolder() == null) {
-                    long time = (this.getId() * 3L) + level.getGameTime() * 3;
-                    float timeClampSpeed = (((time)) % 360) - 180;
+            if (!level.isClientSide && !this.isLeashed() && this.getLeashHolder() == null) {
+                // 更新风向和强度（每60-120 tick变化一次）
+                windChangeTimer--;
+                if (windChangeTimer <= 0) {
+                    windChangeTimer = 60 + rnd.nextInt(60); // 3-6秒变化一次
 
-                    float tiltMax = (float) Math.toRadians(timeClampSpeed);
+                    // 生成新的风向（0-360度）
+                    double windAngle = rnd.nextDouble() * Math.PI * 2;
+                    windStrength = 0.002 + rnd.nextDouble() * 0.008; // 0.002-0.01的风力强度
 
-                    double speed = 0.006;
-                    if (tickCount < 40) {
-                        speed = 0.004F;
-                    }
-                    motion = new Vec3(motion.x() - Math.cos(tiltMax) * speed, motion.y(), motion.z() + Math.sin(tiltMax) * speed);
+                    windDirection = new Vec3(
+                            Math.cos(windAngle) * windStrength,
+                            (rnd.nextDouble() - 0.5) * 0.002, // 轻微的垂直风力
+                            Math.sin(windAngle) * windStrength
+                    );
+                }
+
+                // 随机飘动（更频繁的小幅度变化）
+                driftChangeTimer--;
+                if (driftChangeTimer <= 0) {
+                    driftChangeTimer = 20 + rnd.nextInt(40); // 1-3秒变化一次
+
+                    // 生成随机飘动向量
+                    driftVelocity = new Vec3(
+                            (rnd.nextDouble() - 0.5) * 0.004,
+                            (rnd.nextDouble() - 0.5) * 0.001,
+                            (rnd.nextDouble() - 0.5) * 0.004
+                    );
+                }
+
+                // 应用风力和飘动效果
+                motion = motion.add(windDirection).add(driftVelocity);
+
+                // 添加轻微的阻尼效果，防止速度过快
+                double dampening = 0.98;
+                motion = new Vec3(
+                        motion.x() * dampening,
+                        motion.y(), // Y轴不应用阻尼，保持上升力
+                        motion.z() * dampening
+                );
+
+                // 限制最大水平速度
+                double maxHorizontalSpeed = 0.15;
+                double horizontalSpeed = Math.sqrt(motion.x() * motion.x() + motion.z() * motion.z());
+                if (horizontalSpeed > maxHorizontalSpeed) {
+                    double scale = maxHorizontalSpeed / horizontalSpeed;
+                    motion = new Vec3(motion.x() * scale, motion.y(), motion.z() * scale);
                 }
             }
 
             setDeltaMovement(motion);
+            move(MoverType.SELF, getDeltaMovement());
 
             if (!this.level.noCollision(this.getBoundingBox())) {
                 this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.getZ());
@@ -409,9 +446,8 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         super.tickLeash();
     }
 
-
     @Override
-    public float getBrightness() {
+    public float getLightLevelDependentMagicValue() {
         return 15728880;
     }
 
