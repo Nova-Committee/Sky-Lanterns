@@ -1,11 +1,12 @@
 package committee.nova.skylanterns.init;
 
 import committee.nova.skylanterns.SkyLanterns;
-import net.minecraft.client.renderer.RenderState;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
-
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Description:
@@ -15,10 +16,46 @@ import net.minecraft.util.ResourceLocation;
  */
 public class ModRenderTypes {
 
-    protected static final RenderState.ShadeModelState SMOOTH_SHADE = new RenderState.ShadeModelState(true);
-    protected static final RenderState.LightmapState LIGHTMAP = new RenderState.LightmapState(true);
-    protected static final RenderState.TextureState Light_Tex = new RenderState.TextureState(new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/radiant_light.png"), false, false);
+    protected static final RenderStateShard.ShaderStateShard ENTITY_SHADER = new RenderStateShard.ShaderStateShard(
+            GameRenderer::getRendertypeEntityCutoutShader
+    );
 
-    public static final RenderType SOLID = RenderType.create("radiant_light", DefaultVertexFormats.POSITION_TEX_COLOR, 7, 256, false, true, RenderType.State.builder().setShadeModelState(SMOOTH_SHADE).setLightmapState(LIGHTMAP).setTextureState(Light_Tex).createCompositeState(false));
+    protected static final RenderStateShard.LightmapStateShard LIGHTMAP = new RenderStateShard.LightmapStateShard(true);
 
+    protected static final RenderStateShard.TextureStateShard LIGHT_TEX = new RenderStateShard.TextureStateShard(
+            new ResourceLocation(SkyLanterns.MOD_ID, "textures/entities/radiant_light.png"), false, false);
+
+    public static final RenderType SOLID = RenderType.create(
+            "radiant_light",
+            DefaultVertexFormat.NEW_ENTITY,
+            VertexFormat.Mode.QUADS,
+            256,
+            false,
+            true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(ENTITY_SHADER)
+                    .setLightmapState(LIGHTMAP)
+                    .setTextureState(LIGHT_TEX)
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .createCompositeState(false)
+    );
+
+    public static RenderType glowing(ResourceLocation texture) {
+        return RenderType.create(
+                "sky_lantern_glow",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                256,
+                false,
+                true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexLightmapShader))
+                        .setLightmapState(new RenderStateShard.LightmapStateShard(false))
+                        .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                        .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                        .setCullState(RenderStateShard.NO_CULL)
+                        .createCompositeState(false)
+        );
+    }
 }

@@ -2,12 +2,13 @@ package committee.nova.skylanterns.init;
 
 import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 /**
  * Description:
@@ -17,13 +18,14 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public class ModEntities {
 
-    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, SkyLanterns.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> ENTITIE_TYPE = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SkyLanterns.MOD_ID);
 
-
-    public static final RegistryObject<EntityType<SkyLanternEntity>> SkyLantern = ENTITIES.register("skylantern",
-            () -> EntityType.Builder.of(SkyLanternEntity::new, EntityClassification.CREATURE)
+    public static final RegistryObject<EntityType<SkyLanternEntity>> SKY_LANTERN = ENTITIE_TYPE.register("skylantern",
+            () -> EntityType.Builder.of(SkyLanternEntity::new, MobCategory.CREATURE)
                     .sized(1f, 1f)
                     .build(new ResourceLocation(SkyLanterns.MOD_ID, "skylantern").toString()));
 
-
+    public static void register(IEventBus modEventBus) {
+        ENTITIE_TYPE.register(modEventBus);
+    }
 }

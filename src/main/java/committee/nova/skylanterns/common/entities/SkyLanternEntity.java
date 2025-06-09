@@ -1,38 +1,40 @@
 package committee.nova.skylanterns.common.entities;
 
+import com.mojang.math.Vector3f;
 import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.configs.ModConfig;
 import committee.nova.skylanterns.init.ModBlocks;
 import committee.nova.skylanterns.init.ModEntities;
 import committee.nova.skylanterns.utils.EnumColor;
-import committee.nova.skylanterns.utils.NBTUtils;
-import committee.nova.skylanterns.utils.WorldUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.particles.RedstoneParticleData;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.network.NetworkHooks;
+import committee.nova.skylanterns.utils.TagUtils;
+import committee.nova.skylanterns.utils.LevelUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,14 +48,20 @@ import java.util.UUID;
  * Date: 2022/2/12 7:51
  * Version: 1.0
  */
-public class SkyLanternEntity extends CreatureEntity implements IEntityAdditionalSpawnData {
+public class SkyLanternEntity extends PathfinderMob implements IEntityAdditionalSpawnData {
 
 
-    private static final DataParameter<Byte> IS_LATCHED = EntityDataManager.defineId(SkyLanternEntity.class, DataSerializers.BYTE);
-    private static final DataParameter<Integer> LATCHED_X = EntityDataManager.defineId(SkyLanternEntity.class, DataSerializers.INT);
-    private static final DataParameter<Integer> LATCHED_Y = EntityDataManager.defineId(SkyLanternEntity.class, DataSerializers.INT);
-    private static final DataParameter<Integer> LATCHED_Z = EntityDataManager.defineId(SkyLanternEntity.class, DataSerializers.INT);
-    private static final DataParameter<Integer> LATCHED_ID = EntityDataManager.defineId(SkyLanternEntity.class, DataSerializers.INT);
+    private static final EntityDataAccessor<Byte> IS_LATCHED = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> LATCHED_X = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LATCHED_Y = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LATCHED_Z = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LATCHED_ID = SynchedEntityData.defineId(SkyLanternEntity.class, EntityDataSerializers.INT);
+
+    private Vec3 windDirection = Vec3.ZERO;
+    private int windChangeTimer = 0;
+    private double windStrength = 0.0;
+    private Vec3 driftVelocity = Vec3.ZERO;
+    private int driftChangeTimer = 0;
 
     public BlockPos posLight = new BlockPos(BlockPos.ZERO);
     public LivingEntity latchedEntity;
@@ -62,8 +70,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     private boolean hasCachedEntity;
     private UUID cachedEntityUUID;
 
-    public SkyLanternEntity(EntityType<SkyLanternEntity> p_i48575_1_, World p_i48575_2_) {
-        super(ModEntities.SkyLantern.get(), p_i48575_2_);
+    public SkyLanternEntity(EntityType<SkyLanternEntity> type, Level level) {
+        super(ModEntities.SKY_LANTERN.get(), level);
         //noCulling = true;
 
         setPos(getX() + 0.5F, getY() + 3F, getZ() + 0.5F);
@@ -73,8 +81,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
 
     @Nullable
-    public static SkyLanternEntity create(World world, double x, double y, double z, EnumColor c) {
-        final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
+    public static SkyLanternEntity create(Level world, double x, double y, double z, EnumColor c) {
+        final SkyLanternEntity balloon = ModEntities.SKY_LANTERN.get().create(world);
         if (balloon == null) {
             return null;
         }
@@ -89,7 +97,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     @Nullable
     public static SkyLanternEntity create(LivingEntity entity, EnumColor c) {
-        final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(entity.level);
+        final SkyLanternEntity balloon = ModEntities.SKY_LANTERN.get().create(entity.level);
         if (balloon == null) {
             return null;
         }
@@ -108,8 +116,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     @Nullable
-    public static SkyLanternEntity create(World world, BlockPos pos, EnumColor c) {
-        final SkyLanternEntity balloon = ModEntities.SkyLantern.get().create(world);
+    public static SkyLanternEntity create(Level world, BlockPos pos, EnumColor c) {
+        final SkyLanternEntity balloon = ModEntities.SKY_LANTERN.get().create(world);
         if (balloon == null) {
             return null;
         }
@@ -128,8 +136,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         return balloon;
     }
 
-    public static AttributeModifierMap.MutableAttribute setAttributes() {
-        return MobEntity.createMobAttributes()
+    public static AttributeSupplier.Builder setAttributes() {
+        return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 30.0D);
     }
 
@@ -172,9 +180,9 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
             return;
         } else {
             if (level.random.nextInt(5) == 0) {
-                final double d0 = xo;// + 0.5D;
+                final double d0 = xo;
                 final double d1 = yo + 0.15D;
-                final double d2 = zo;// + 0.5D;
+                final double d2 = zo;
                 level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                 level.addParticle(ParticleTypes.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
             }
@@ -193,8 +201,8 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
             }
         } else {
             if (hasCachedEntity) {
-                if (level instanceof ServerWorld) {
-                    final Entity entity = ((ServerWorld) level).getEntity(cachedEntityUUID);
+                if (level instanceof ServerLevel) {
+                    final Entity entity = ((ServerLevel) level).getEntity(cachedEntityUUID);
                     if (entity instanceof LivingEntity) {
                         latchedEntity = (LivingEntity) entity;
                     }
@@ -222,13 +230,13 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
         if (!level.isClientSide) {
             if (latched != null) {
-                final Optional<BlockState> blockState = WorldUtils.getBlockState(level, latched);
-                if (blockState.isPresent() && blockState.get().isAir(level, latched)) {
+                final Optional<BlockState> blockState = LevelUtils.getBlockState(level, latched);
+                if (blockState.isPresent() && blockState.get().isAir()) {
                     latched = null;
                     entityData.set(IS_LATCHED, (byte) 0);
                 }
             }
-            if (latchedEntity != null && (latchedEntity.getHealth() <= 0 || !latchedEntity.isAlive() || !level.getChunkSource().isEntityTickingChunk(latchedEntity))) {
+            if (latchedEntity != null && (latchedEntity.getHealth() <= 0 || !latchedEntity.isAlive() || latchedEntity.isRemoved())) {
                 latchedEntity = null;
                 entityData.set(IS_LATCHED, (byte) 0);
             }
@@ -236,40 +244,70 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         }
 
         if (!isLatched()) {
+            final RandomSource rnd = this.random;
+            Vec3 motion = getDeltaMovement();
 
-
-            final Random rnd = this.random;
-            Vector3d motion;
-
-            {
-                motion = getDeltaMovement();
-
-                if (motion.y() < 0.05D) {
-                    if (tickCount >= 40) {
-                        motion = new Vector3d(motion.x(), motion.y() + rnd.nextDouble() * 0.006D, motion.z());
-                    } else {
-                        motion = new Vector3d(motion.x(), motion.y() + rnd.nextDouble() * 0.003D, motion.z());
-                    }
+            // 基础上升力
+            if (motion.y() < 0.05D) {
+                if (tickCount >= 40) {
+                    motion = new Vec3(motion.x(), motion.y() + rnd.nextDouble() * 0.006D, motion.z());
+                } else {
+                    motion = new Vec3(motion.x(), motion.y() + rnd.nextDouble() * 0.003D, motion.z());
                 }
-                setDeltaMovement(motion);
-                move(MoverType.SELF, getDeltaMovement());
+            }
 
-                motion = getDeltaMovement();
-                if (!level.isClientSide && !this.isLeashed() && this.getLeashHolder() == null) {
-                    long time = (this.getId() * 3L) + level.getGameTime() * 3;
-                    float timeClampSpeed = (((time)) % 360) - 180;
+            if (!level.isClientSide && !this.isLeashed() && this.getLeashHolder() == null) {
+                // 更新风向和强度（每60-120 tick变化一次）
+                windChangeTimer--;
+                if (windChangeTimer <= 0) {
+                    windChangeTimer = 60 + rnd.nextInt(60); // 3-6秒变化一次
 
-                    float tiltMax = (float) Math.toRadians(timeClampSpeed);
+                    // 生成新的风向（0-360度）
+                    double windAngle = rnd.nextDouble() * Math.PI * 2;
+                    windStrength = 0.002 + rnd.nextDouble() * 0.008; // 0.002-0.01的风力强度
 
-                    double speed = 0.006;
-                    if (tickCount < 40) {
-                        speed = 0.004F;
-                    }
-                    motion = new Vector3d(motion.x() - Math.cos(tiltMax) * speed, motion.y(), motion.z() + Math.sin(tiltMax) * speed);
+                    windDirection = new Vec3(
+                            Math.cos(windAngle) * windStrength,
+                            (rnd.nextDouble() - 0.5) * 0.002, // 轻微的垂直风力
+                            Math.sin(windAngle) * windStrength
+                    );
+                }
+
+                // 随机飘动（更频繁的小幅度变化）
+                driftChangeTimer--;
+                if (driftChangeTimer <= 0) {
+                    driftChangeTimer = 20 + rnd.nextInt(40); // 1-3秒变化一次
+
+                    // 生成随机飘动向量
+                    driftVelocity = new Vec3(
+                            (rnd.nextDouble() - 0.5) * 0.004,
+                            (rnd.nextDouble() - 0.5) * 0.001,
+                            (rnd.nextDouble() - 0.5) * 0.004
+                    );
+                }
+
+                // 应用风力和飘动效果
+                motion = motion.add(windDirection).add(driftVelocity);
+
+                // 添加轻微的阻尼效果，防止速度过快
+                double dampening = 0.98;
+                motion = new Vec3(
+                        motion.x() * dampening,
+                        motion.y(), // Y轴不应用阻尼，保持上升力
+                        motion.z() * dampening
+                );
+
+                // 限制最大水平速度
+                double maxHorizontalSpeed = 0.15;
+                double horizontalSpeed = Math.sqrt(motion.x() * motion.x() + motion.z() * motion.z());
+                if (horizontalSpeed > maxHorizontalSpeed) {
+                    double scale = maxHorizontalSpeed / horizontalSpeed;
+                    motion = new Vec3(motion.x() * scale, motion.y(), motion.z() * scale);
                 }
             }
 
             setDeltaMovement(motion);
+            move(MoverType.SELF, getDeltaMovement());
 
             if (!this.level.noCollision(this.getBoundingBox())) {
                 this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.getZ());
@@ -279,7 +317,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
             setDeltaMovement(0, 0, 0);
         } else if (latchedEntity != null && latchedEntity.getHealth() > 0) {
             final int floor = getFloor(latchedEntity);
-            final Vector3d motion = latchedEntity.getDeltaMovement();
+            final Vec3 motion = latchedEntity.getDeltaMovement();
             if (latchedEntity.getY() - (floor + 1) < -0.1) {
                 latchedEntity.setDeltaMovement(motion.x(), Math.max(0.04, motion.y() * 1.015), motion.z());
             } else if (latchedEntity.getY() - (floor + 1) > 0.1) {
@@ -293,13 +331,13 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         if (ModConfig.COMMON.lightUpdateRate.get() != -1) {
             if (!this.level.isClientSide && (ModConfig.COMMON.lightUpdateRate.get() <= 0 || level.getGameTime() % ModConfig.COMMON.lightUpdateRate.get() == 0)) {
                 final double dist = distanceToSqr(posLight.getX(), posLight.getY(), posLight.getZ());
-                if (dist >= ModConfig.COMMON.lightUpdateDistanceAccuracy.get() || level.getBlockState(posLight).getBlock() != ModBlocks.Lit) {
+                if (dist >= ModConfig.COMMON.lightUpdateDistanceAccuracy.get() || level.getBlockState(posLight).getBlock() != ModBlocks.AIR_LIT.get()) {
                     //remove old if needed
                     clearCurrentLightBlock();
                     //set new, setting light high in the sky is a lag fest, only allow it when directly above ground
                     posLight = blockPosition();
                     if (level.isEmptyBlock(posLight) && level.getBlockFloorHeight(posLight) + ModConfig.COMMON.lightUpdateDistanceToGround.get() > getY()) {
-                        level.setBlockAndUpdate(posLight, ModBlocks.Lit.defaultBlockState());
+                        level.setBlockAndUpdate(posLight, ModBlocks.AIR_LIT.get().defaultBlockState());
                     }
                 }
             }
@@ -322,7 +360,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         final BlockPos pos = new BlockPos(entity.position());
         for (BlockPos posi = pos; posi.getY() > 0; posi = posi.below()) {
             if (posi.getY() < level.getMaxBuildHeight() && !level.isEmptyBlock(posi)) {
-                return posi.getY() + 1 + (entity instanceof PlayerEntity ? 1 : 0);
+                return posi.getY() + 1 + (entity instanceof Player ? 1 : 0);
             }
         }
         return -1;
@@ -332,7 +370,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     public void clearCurrentLightBlock() {
         if (!posLight.equals(BlockPos.ZERO)) {
             final BlockState state = level.getBlockState(posLight);
-            if (state.getBlock() == ModBlocks.Lit) {
+            if (state.getBlock() == ModBlocks.AIR_LIT.get()) {
                 //System.out.println("set " + posLight + " to air");
                 level.setBlockAndUpdate(posLight, Blocks.AIR.defaultBlockState());
             }
@@ -351,16 +389,15 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     @Override
-    protected boolean isMovementNoisy() {
-        return false;
+    protected void playStepSound(BlockPos pos, BlockState state) {
     }
 
 
     @Override
-    public void readAdditionalSaveData(CompoundNBT compound) {
-        NBTUtils.setEnumIfPresent(compound, "color", EnumColor::byIndexStatic, color -> this.color = color);
-        NBTUtils.setBlockPosIfPresent(compound, "latched", pos -> latched = pos);
-        NBTUtils.setUUIDIfPresent(compound, "owner", uuid -> {
+    public void readAdditionalSaveData(CompoundTag compound) {
+        TagUtils.setEnumIfPresent(compound, "color", EnumColor::byIndexStatic, color -> this.color = color);
+        TagUtils.setBlockPosIfPresent(compound, "latched", pos -> latched = pos);
+        TagUtils.setUUIDIfPresent(compound, "owner", uuid -> {
             hasCachedEntity = true;
             cachedEntityUUID = uuid;
         });
@@ -370,10 +407,10 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundNBT compound) {
+    public void addAdditionalSaveData(CompoundTag compound) {
         compound.putInt("color", color.ordinal());
         if (latched != null) {
-            compound.put("latched", NBTUtil.writeBlockPos(latched));
+            compound.put("latched", NbtUtils.writeBlockPos(latched));
         }
         if (latchedEntity != null) {
             compound.putUUID("owner", latchedEntity.getUUID());
@@ -383,7 +420,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         compound.putInt("light_Z", posLight.getZ());
 
         if (this.isLeashed() && getLeashHolder() == null) {
-            final CompoundNBT tag = ObfuscationReflectionHelper.getPrivateValue(MobEntity.class, this, "field_110170_bx");
+            final CompoundTag tag = ObfuscationReflectionHelper.getPrivateValue(Mob.class, this, "field_110170_bx");
             if (tag != null) {
                 //System.out.println("writing leashNBTTag to disk for vanilla bug fix: " + tag);
                 compound.put("Leash", tag);
@@ -409,15 +446,14 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
         super.tickLeash();
     }
 
-
     @Override
-    public float getBrightness() {
+    public float getLightLevelDependentMagicValue() {
         return 15728880;
     }
 
     @Nonnull
     @Override
-    public IPacket<?> getAddEntityPacket() {
+    public Packet<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
@@ -429,7 +465,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     @Override
-    public void writeSpawnData(PacketBuffer data) {
+    public void writeSpawnData(FriendlyByteBuf data) {
         data.writeDouble(getX());
         data.writeDouble(getY());
         data.writeDouble(getZ());
@@ -447,7 +483,7 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
     }
 
     @Override
-    public void readSpawnData(PacketBuffer data) {
+    public void readSpawnData(FriendlyByteBuf data) {
         setPos(data.readDouble(), data.readDouble(), data.readDouble());
         color = data.readEnum(EnumColor.class);
         final byte type = data.readByte();
@@ -486,56 +522,52 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
     private void pop() {
         if (!level.isClientSide) {
-            final RedstoneParticleData redstoneParticleData = new RedstoneParticleData(color.getColor(0), color.getColor(1), color.getColor(2), 1.0F);
+            Vector3f colorVec = new Vector3f(
+                    color.getColor(0),
+                    color.getColor(1),
+                    color.getColor(2)
+            );
+            DustParticleOptions dustParticleOptions = new DustParticleOptions(colorVec, 1.0F);
             for (int i = 0; i < 10; i++) {
-                ((ServerWorld) level).sendParticles(redstoneParticleData, getX() + 0.6 * random.nextFloat() - 0.3, getY() + 0.6 * random.nextFloat() - 0.3,
-                        getZ() + 0.6 * random.nextFloat() - 0.3, 1, 0, 0, 0, 0);
+                ((ServerLevel) level).sendParticles(
+                        dustParticleOptions,
+                        getX() + 0.6 * random.nextFloat() - 0.3,
+                        getY() + 0.6 * random.nextFloat() - 0.3,
+                        getZ() + 0.6 * random.nextFloat() - 0.3,
+                        1, 0, 0, 0, 0
+                );
             }
         }
-        remove();
+        remove(Entity.RemovalReason.DISCARDED);
     }
 
 
     @Override
-    protected float getStandingEyeHeight(@Nonnull Pose pose, @Nonnull EntitySize size) {
+    protected float getStandingEyeHeight(@Nonnull Pose pose, @Nonnull EntityDimensions size) {
         return size.height - 0.5F;
     }
 
     @Nonnull
     @Override
-    protected AxisAlignedBB getBoundingBoxForPose(@Nonnull Pose pose) {
+    protected AABB getBoundingBoxForPose(@Nonnull Pose pose) {
         return getBoundingBox(getDimensions(pose), getX(), getY(), getZ());
     }
 
     @Override
     public void setPos(double x, double y, double z) {
         setPosRaw(x, y, z);
-        if (isAddedToWorld() && !this.level.isClientSide && level instanceof ServerWorld) {
-            ((ServerWorld) this.level).updateChunkPos(this); // Forge - Process chunk registration after moving.
-        }
         setBoundingBox(getBoundingBox(getDimensions(Pose.STANDING), x, y, z));
     }
 
-    private AxisAlignedBB getBoundingBox(EntitySize size, double x, double y, double z) {
+    private AABB getBoundingBox(EntityDimensions size, double x, double y, double z) {
         final float f = size.width / 2F;
         final double posY = y - 0.5F;
-        return new AxisAlignedBB(new Vector3d(x - f, posY, z - f), new Vector3d(x + f, posY + size.height, z + f));
+        return new AABB(new Vec3(x - f, posY, z - f), new Vec3(x + f, posY + size.height, z + f));
     }
 
     @Override
     public void refreshDimensions() {
         //NO-OP don't allow size to change
-    }
-
-
-    @Override
-    public void setLocationFromBoundingbox() {
-        final AxisAlignedBB axisalignedbb = getBoundingBox();
-        //Offset the y value upwards to match where it actually should be relative to the bounding box
-        setPosRaw((axisalignedbb.minX + axisalignedbb.maxX) / 2D, axisalignedbb.minY + 0.5F, (axisalignedbb.minZ + axisalignedbb.maxZ) / 2D);
-        if (isAddedToWorld() && !this.level.isClientSide && level instanceof ServerWorld) {
-            ((ServerWorld) this.level).updateChunkPos(this); // Forge - Process chunk registration after moving.
-        }
     }
 
 
@@ -552,21 +584,22 @@ public class SkyLanternEntity extends CreatureEntity implements IEntityAdditiona
 
 
     @Override
-    public void remove() {
-        super.remove();
-//        if (!level.isClientSide) {
-//            clearCurrentLightBlock();
-//        }
+    public void remove(Entity.RemovalReason reason) {
+        super.remove(reason);
+        // if (!level.isClientSide) {
+        //     clearCurrentLightBlock();
+        // }
         if (latchedEntity != null) {
             latchedEntity.hasImpulse = false;
         }
     }
 
+
     public void setUnlatched() {
         latched = null;
         entityData.set(IS_LATCHED, (byte) 0);
         if (!level.isClientSide)
-            level.playSound(null, this, SoundEvents.ARMOR_EQUIP_LEATHER, SoundCategory.NEUTRAL, 1F, 1F);
+            level.playSound(null, this, SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.NEUTRAL, 1F, 1F);
     }
 
 

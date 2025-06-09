@@ -2,18 +2,9 @@ package committee.nova.skylanterns.client.model;
 
 import committee.nova.skylanterns.SkyLanterns;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.client.renderer.model.BlockModel;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.IUnbakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.SimpleModelTransform;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
-import net.minecraftforge.client.model.obj.OBJLoader;
-import net.minecraftforge.client.model.obj.OBJModel;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.event.ModelEvent;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -27,8 +18,8 @@ import java.util.function.Function;
 public class BaseModelCache {
     private final Map<ResourceLocation, ModelData> modelMap = new Object2ObjectOpenHashMap<>();
 
-    public static IBakedModel getBakedModel(ModelBakeEvent evt, ResourceLocation rl) {
-        IBakedModel bakedModel = evt.getModelRegistry().get(rl);
+    public static BakedModel getBakedModel(ModelEvent.BakingCompleted evt, ResourceLocation rl) {
+        BakedModel bakedModel = evt.getModels().get(rl);
         if (bakedModel == null) {
             SkyLanterns.LOGGER.error("Baked model doesn't exist: {}", rl.toString());
             return evt.getModelManager().getMissingModel();
@@ -36,16 +27,12 @@ public class BaseModelCache {
         return bakedModel;
     }
 
-    public void onBake(ModelBakeEvent evt) {
+    public void onBake(ModelEvent.BakingCompleted evt) {
         modelMap.values().forEach(m -> m.reload(evt));
     }
 
     public void setup() {
         modelMap.values().forEach(ModelData::setup);
-    }
-
-    protected OBJModelData registerOBJ(ResourceLocation rl) {
-        return register(rl, OBJModelData::new);
     }
 
     protected JSONModelData registerJSON(ResourceLocation rl) {
@@ -59,69 +46,36 @@ public class BaseModelCache {
     }
 
     public static class ModelData {
-
         protected final ResourceLocation rl;
-        private final Map<IModelConfiguration, IBakedModel> bakedMap = new Object2ObjectOpenHashMap<>();
-        protected IModelGeometry<?> model;
+        private BakedModel bakedModel;
 
         protected ModelData(ResourceLocation rl) {
             this.rl = rl;
         }
 
-        protected void reload(ModelBakeEvent evt) {
-            bakedMap.clear();
+        protected void reload(ModelEvent.BakingCompleted evt) {
+            this.bakedModel = getBakedModel(evt, rl);
         }
 
         protected void setup() {
         }
 
-        public IBakedModel bake(IModelConfiguration config) {
-            return bakedMap.computeIfAbsent(config, c -> model.bake(c, ModelLoader.instance(), ModelLoader.defaultTextureGetter(), SimpleModelTransform.IDENTITY, ItemOverrideList.EMPTY, rl));
+        public BakedModel getBakedModel(ModelEvent.BakingCompleted evt, ResourceLocation rl) {
+            return bakedModel;
         }
 
-        public IModelGeometry<?> getModel() {
-            return model;
-        }
-    }
-
-    public static class OBJModelData extends ModelData {
-
-        protected OBJModelData(ResourceLocation rl) {
-            super(rl);
-        }
-
-        @Override
-        protected void reload(ModelBakeEvent evt) {
-            super.reload(evt);
-            model = OBJLoader.INSTANCE.loadModel(new OBJModel.ModelSettings(rl, true, true, true, true, null));
+        public ResourceLocation getResourceLocation() {
+            return rl;
         }
     }
 
     public static class JSONModelData extends ModelData {
-
-        private IBakedModel bakedModel;
-
         private JSONModelData(ResourceLocation rl) {
             super(rl);
         }
 
         @Override
-        protected void reload(ModelBakeEvent evt) {
-            super.reload(evt);
-            bakedModel = BaseModelCache.getBakedModel(evt, rl);
-            IUnbakedModel unbaked = evt.getModelLoader().getModel(rl);
-            if (unbaked instanceof BlockModel) {
-                model = ((BlockModel) unbaked).customData.getCustomGeometry();
-            }
-        }
-
-        @Override
         protected void setup() {
-            ModelLoader.addSpecialModel(rl);
-        }
-
-        public IBakedModel getBakedModel() {
-            return bakedModel;
         }
     }
 }

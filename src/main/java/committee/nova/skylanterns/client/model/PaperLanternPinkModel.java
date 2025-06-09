@@ -1,10 +1,18 @@
 package committee.nova.skylanterns.client.model;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
-import net.minecraft.client.renderer.entity.model.EntityModel;
-import net.minecraft.client.renderer.model.ModelRenderer;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Description:
@@ -14,96 +22,115 @@ import net.minecraft.client.renderer.model.ModelRenderer;
  */
 public class PaperLanternPinkModel extends EntityModel<SkyLanternEntity> {
 
-    ModelRenderer Bottom;
-    ModelRenderer Top2;
-    ModelRenderer Top3;
-    ModelRenderer Top;
-    ModelRenderer Top21;
-    ModelRenderer Top31;
-    ModelRenderer Front;
-    ModelRenderer Left;
-    ModelRenderer Right;
-    ModelRenderer Back;
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
+            new ResourceLocation(SkyLanterns.MOD_ID, "sky_lantern_pink"), "main");
 
-    public PaperLanternPinkModel() {
-        Bottom = new ModelRenderer(this, 57, 67);
-        Bottom.setTexSize(256, 256);
-        Bottom.addBox(-24F, -0.5F, -24F, 48, 1, 48);
-        Bottom.setPos(0F, 21F, 0F);
-        setRotation(Bottom, 0, 0, 0);
-        Top2 = new ModelRenderer(this, 65, 116);
-        Top2.setTexSize(256, 256);
-        Top2.addBox(-22F, -0.5F, -22F, 44, 1, 44);
-        Top2.setPos(0F, 22F, 0F);
-        setRotation(Top2, 0, 0, 0);
-        Top3 = new ModelRenderer(this, 73, 161);
-        Top3.setTexSize(256, 256);
-        Top3.addBox(-20F, -0.5F, -20F, 40, 1, 40);
-        Top3.setPos(0F, 23F, 0F);
-        setRotation(Top3, 0, 0, 0);
-        Top = new ModelRenderer(this, 57, 15);
-        Top.setTexSize(256, 256);
-        Top.addBox(-24F, -0.5F, -24F, 48, 1, 48);
-        Top.setPos(0F, -36F, 0F);
-        setRotation(Top, 0, 0, 0);
-        Top21 = new ModelRenderer(this, 65, 20);
-        Top21.setTexSize(256, 256);
-        Top21.addBox(-22F, -0.5F, -22F, 44, 1, 44);
-        Top21.setPos(0F, -37F, 0F);
-        setRotation(Top21, 0, 0, 0);
-        Top31 = new ModelRenderer(this, 73, 23);
-        Top31.setTexSize(256, 256);
-        Top31.addBox(-20F, -0.5F, -20F, 40, 1, 40);
-        Top31.setPos(0F, -38F, 0F);
-        setRotation(Top31, 0, 0, 0);
-        Front = new ModelRenderer(this, 0, 0);
-        Front.setTexSize(256, 256);
-        Front.addBox(-24F, -28F, -0.5F, 48, 56, 1);
-        Front.setPos(0F, -7.5F, -24F);
-        setRotation(Front, 0, 0, 0);
-        Left = new ModelRenderer(this, 0, 0);
-        Left.setTexSize(256, 256);
-        Left.addBox(-24F, -28F, -0.5F, 48, 56, 1);
-        Left.setPos(-24F, -7.5F, 0F);
-        setRotation(Left, 0, -1.570796F, 0);
-        Right = new ModelRenderer(this, 0, 0);
-        Right.setTexSize(256, 256);
-        Right.addBox(-24F, -28F, -0.5F, 48, 56, 1);
-        Right.setPos(24F, -7.5F, 0F);
-        setRotation(Right, 0, -1.570796F, 0);
-        Back = new ModelRenderer(this, 0, 0);
-        Back.setTexSize(256, 256);
-        Back.addBox(-24F, -28F, -0.5F, 48, 56, 1);
-        Back.setPos(0F, -7.5F, 24F);
-        setRotation(Back, 0, 0, 0);
+    private final ModelPart bottom;
+    private final ModelPart top2;
+    private final ModelPart top3;
+    private final ModelPart top;
+    private final ModelPart top21;
+    private final ModelPart top31;
+    private final ModelPart front;
+    private final ModelPart left;
+    private final ModelPart right;
+    private final ModelPart back;
+
+    public PaperLanternPinkModel(ModelPart root) {
+        this.bottom = root.getChild("bottom");
+        this.top2 = root.getChild("top2");
+        this.top3 = root.getChild("top3");
+        this.top = root.getChild("top");
+        this.top21 = root.getChild("top21");
+        this.top31 = root.getChild("top31");
+        this.front = root.getChild("front");
+        this.left = root.getChild("left");
+        this.right = root.getChild("right");
+        this.back = root.getChild("back");
     }
 
+    public static LayerDefinition createBodyLayer() {
+        MeshDefinition meshdefinition = new MeshDefinition();
+        PartDefinition partdefinition = meshdefinition.getRoot();
+
+        partdefinition.addOrReplaceChild("bottom",
+                CubeListBuilder.create()
+                        .texOffs(57, 67)
+                        .addBox(-24.0F, -0.5F, -24.0F, 48.0F, 1.0F, 48.0F),
+                PartPose.offset(0.0F, 21.0F, 0.0F));
+
+        partdefinition.addOrReplaceChild("top2",
+                CubeListBuilder.create()
+                        .texOffs(65, 116)
+                        .addBox(-22.0F, -0.5F, -22.0F, 44.0F, 1.0F, 44.0F),
+                PartPose.offset(0.0F, 22.0F, 0.0F));
+
+        partdefinition.addOrReplaceChild("top3",
+                CubeListBuilder.create()
+                        .texOffs(73, 161)
+                        .addBox(-20.0F, -0.5F, -20.0F, 40.0F, 1.0F, 40.0F),
+                PartPose.offset(0.0F, 23.0F, 0.0F));
+
+        partdefinition.addOrReplaceChild("top",
+                CubeListBuilder.create()
+                        .texOffs(57, 15)
+                        .addBox(-24.0F, -0.5F, -24.0F, 48.0F, 1.0F, 48.0F),
+                PartPose.offset(0.0F, -36.0F, 0.0F));
+
+        partdefinition.addOrReplaceChild("top21",
+                CubeListBuilder.create()
+                        .texOffs(65, 20)
+                        .addBox(-22.0F, -0.5F, -22.0F, 44.0F, 1.0F, 44.0F),
+                PartPose.offset(0.0F, -37.0F, 0.0F));
+
+        partdefinition.addOrReplaceChild("top31",
+                CubeListBuilder.create()
+                        .texOffs(73, 23)
+                        .addBox(-20.0F, -0.5F, -20.0F, 40.0F, 1.0F, 40.0F),
+                PartPose.offset(0.0F, -38.0F, 0.0F));
+
+        partdefinition.addOrReplaceChild("front",
+                CubeListBuilder.create()
+                        .texOffs(0, 0)
+                        .addBox(-24.0F, -28.0F, -0.5F, 48.0F, 56.0F, 1.0F),
+                PartPose.offset(0.0F, -7.5F, -24.0F));
+
+        partdefinition.addOrReplaceChild("left",
+                CubeListBuilder.create()
+                        .texOffs(0, 0)
+                        .addBox(-24.0F, -28.0F, -0.5F, 48.0F, 56.0F, 1.0F),
+                PartPose.offsetAndRotation(-24.0F, -7.5F, 0.0F, 0.0F, -1.570796F, 0.0F));
+
+        partdefinition.addOrReplaceChild("right",
+                CubeListBuilder.create()
+                        .texOffs(0, 0)
+                        .addBox(-24.0F, -28.0F, -0.5F, 48.0F, 56.0F, 1.0F),
+                PartPose.offsetAndRotation(24.0F, -7.5F, 0.0F, 0.0F, -1.570796F, 0.0F));
+
+        partdefinition.addOrReplaceChild("back",
+                CubeListBuilder.create()
+                        .texOffs(0, 0)
+                        .addBox(-24.0F, -28.0F, -0.5F, 48.0F, 56.0F, 1.0F),
+                PartPose.offset(0.0F, -7.5F, 24.0F));
+
+        return LayerDefinition.create(meshdefinition, 256, 256);
+    }
 
     @Override
     public void setupAnim(SkyLanternEntity pEntity, float pLimbSwing, float pLimbSwingAmount, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch) {
-
-
     }
-
 
     @Override
-    public void renderToBuffer(MatrixStack pMatrixStack, IVertexBuilder pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha) {
-        Bottom.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Top2.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Top3.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Top.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Top21.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Top31.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Front.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Left.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Right.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-        Back.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
-
-    }
-
-    private void setRotation(ModelRenderer model, float x, float y, float z) {
-        model.xRot = x;
-        model.yRot = y;
-        model.zRot = z;
+    public void renderToBuffer(PoseStack pPoseStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha) {
+        bottom.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        top2.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        top3.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        top.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        top21.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        top31.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        front.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        left.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        right.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        back.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
     }
 }
