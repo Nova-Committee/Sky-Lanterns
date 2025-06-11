@@ -13,14 +13,13 @@ public class PlayerHandler {
     @SubscribeEvent
     public static void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
         final Entity target = event.getTarget();
-        if (!(target instanceof SkyLanternEntity)) {
+        if (!(target instanceof SkyLanternEntity lantern)) {
             return;
         }
         final Player player = event.getEntity();
         if (!player.isCrouching()) {
             return;
         }
-        final SkyLanternEntity lantern = (SkyLanternEntity) target;
         if (lantern.isLatched()) {
             lantern.setUnlatched();
         }

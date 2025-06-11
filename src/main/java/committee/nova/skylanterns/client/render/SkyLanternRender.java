@@ -9,6 +9,7 @@ import committee.nova.skylanterns.client.model.PaperLanternPinkModel;
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
 import committee.nova.skylanterns.init.ModRenderTypes;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
@@ -45,7 +47,7 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(SkyLanternEntity entity) {
+    public @NotNull ResourceLocation getTextureLocation(SkyLanternEntity entity) {
         return new ResourceLocation(SkyLanterns.MOD_ID + ":textures/entities/sky_lantern_" + entity.getColor().getRegistryPrefix() + ".png");
     }
 
@@ -114,42 +116,42 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
         float f4 = Mth.fastInvSqrt(f * f + f2 * f2) * 0.025F / 2.0F;
         float f5 = f2 * f4;
         float f6 = f * f4;
-
         BlockPos blockpos = new BlockPos(pEntityLiving.getEyePosition(pPartialTicks));
         BlockPos blockpos1 = new BlockPos(pLeashHolder.getEyePosition(pPartialTicks));
         int i = this.getBlockLightLevel(pEntityLiving, blockpos);
+        int j = this.getBlockLightLevel1(pLeashHolder, blockpos1);
         int k = pEntityLiving.level.getBrightness(LightLayer.SKY, blockpos);
         int l = pEntityLiving.level.getBrightness(LightLayer.SKY, blockpos1);
 
-        renderSide(vertexconsumer, matrix4f, f, f1, f2, i, 0, k, l, 0.025F, 0.025F, f5, f6);
-        renderSide(vertexconsumer, matrix4f, f, f1, f2, i, 0, k, l, 0.025F, 0.0F, f5, f6);
+        for(int i1 = 0; i1 <= 24; ++i1) {
+            addVertexPair(vertexconsumer, matrix4f, f, f1, f2, i, j, k, l, 0.025F, 0.025F, f5, f6, i1, false);
+        }
+
+        for(int j1 = 24; j1 >= 0; --j1) {
+            addVertexPair(vertexconsumer, matrix4f, f, f1, f2, i, j, k, l, 0.025F, 0.0F, f5, f6, j1, true);
+        }
+
         pPoseStack.popPose();
     }
 
-    private static void renderSide(VertexConsumer pConsumer, Matrix4f pMatrix, float pX, float pY, float pZ, int pBlockLight, int pSkyLight, int pSkyLight2, int pSkyLight3, float pMinU, float pMaxU, float pMinV, float pMaxV) {
-        int i = (pBlockLight + pSkyLight) / 2;
-        int j = (pSkyLight2 + pSkyLight3) / 2;
+    public  <E extends Entity> int getBlockLightLevel1(E p_114496_, BlockPos p_114497_) {
+        return p_114496_.isOnFire() ? 15 : p_114496_.level.getBrightness(LightLayer.BLOCK, p_114497_);
+    }
 
-        pConsumer.vertex(pMatrix, pX - pMinV, pY + pMaxU, pZ + pMinV)
-            .color(255, 255, 255, 255)
-            .uv(0.0F, 0.0F)
-            .uv2(i)
-            .endVertex();
-        pConsumer.vertex(pMatrix, pX + pMinV, pY + pMinU, pZ - pMinV)
-            .color(255, 255, 255, 255)
-            .uv(1.0F, 0.0F)
-            .uv2(j)
-            .endVertex();
-        pConsumer.vertex(pMatrix, pX + pMinV, pY + pMinU, pZ - pMinV)
-            .color(255, 255, 255, 255)
-            .uv(1.0F, 1.0F)
-            .uv2(j)
-            .endVertex();
-        pConsumer.vertex(pMatrix, pX - pMinV, pY + pMaxU, pZ + pMinV)
-            .color(255, 255, 255, 255)
-            .uv(0.0F, 1.0F)
-            .uv2(i)
-            .endVertex();
+    private static void addVertexPair(VertexConsumer pConsumer, Matrix4f pMatrix, float p_174310_, float p_174311_, float p_174312_, int p_174313_, int p_174314_, int p_174315_, int p_174316_, float p_174317_, float p_174318_, float p_174319_, float p_174320_, int p_174321_, boolean p_174322_) {
+        float f = (float)p_174321_ / 24.0F;
+        int i = (int)Mth.lerp(f, (float)p_174313_, (float)p_174314_);
+        int j = (int)Mth.lerp(f, (float)p_174315_, (float)p_174316_);
+        int k = LightTexture.pack(i, j);
+        float f1 = p_174321_ % 2 == (p_174322_ ? 1 : 0) ? 0.7F : 1.0F;
+        float f2 = 0.5F * f1;
+        float f3 = 0.4F * f1;
+        float f4 = 0.3F * f1;
+        float f5 = p_174310_ * f;
+        float f6 = p_174311_ > 0.0F ? p_174311_ * f * f : p_174311_ - p_174311_ * (1.0F - f) * (1.0F - f);
+        float f7 = p_174312_ * f;
+        pConsumer.vertex(pMatrix, f5 - p_174319_, f6 + p_174318_, f7 + p_174320_).color(f2, f3, f4, 1.0F).uv2(k).endVertex();
+        pConsumer.vertex(pMatrix, f5 + p_174319_, f6 + p_174317_ - p_174318_, f7 - p_174320_).color(f2, f3, f4, 1.0F).uv2(k).endVertex();
     }
 
     protected void setupRotations(SkyLanternEntity entity, PoseStack pPoseStack, float pRotationYaw, float pPartialTicks) {
