@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -26,21 +27,23 @@ import java.util.List;
 public class SkyLanternsItem extends Item {
 
 
-    private final EnumColor color = EnumColor.ORANGE;
+    private final EnumColor color;
 
     public SkyLanternsItem(EnumColor color) {
         super(new Properties().stacksTo(16).tab(ModTabs.TAB));
+        this.color = color;
     }
 
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         final Level world = pContext.getLevel();
         final BlockPos pos = pContext.getClickedPos();
+        final ItemStack stack = pContext.getItemInHand();
+        final Player player = pContext.getPlayer();
         if (!world.isClientSide) {
-            final ItemStack stack = pContext.getItemInHand();
             if (!stack.isEmpty()) {
-                pContext.getPlayer().swing(pContext.getHand());
+                player.swing(pContext.getHand());
 
                 final SkyLanternEntity entity = SkyLanternEntity.create(world, new BlockPos(pos.getX(), pos.getY() + 0.5, pos.getZ()), color);
                 if (entity == null) {

@@ -52,7 +52,7 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
     }
 
     @Override
-    public void render(SkyLanternEntity pEntity, float pEntityYaw, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight) {
+    public void render(SkyLanternEntity pEntity, float pEntityYaw, float pPartialTicks, PoseStack pPoseStack, @NotNull MultiBufferSource pBuffer, int pPackedLight) {
         pPoseStack.pushPose();
 
         // 位置和缩放调整
@@ -61,6 +61,18 @@ public class SkyLanternRender extends EntityRenderer<SkyLanternEntity> {
         pPoseStack.scale(scale, scale, scale);
         pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(180));
 
+        //被牵引至指定地点
+        if (pEntity.isLatchedToEntity()) {
+            double x = pEntity.latchedEntity.xOld + (pEntity.latchedEntity.getX() - pEntity.latchedEntity.xOld) * pPartialTicks
+                    - (pEntity.xOld + (pEntity.getX() - pEntity.xOld) * pPartialTicks);
+            double y = pEntity.latchedEntity.yOld + (pEntity.latchedEntity.getY() - pEntity.latchedEntity.yOld) * pPartialTicks
+                    - (pEntity.yOld + (pEntity.getY() - pEntity.yOld) * pPartialTicks)
+                    + pEntity.getAddedHeight();
+            double z = pEntity.latchedEntity.zOld + (pEntity.latchedEntity.getZ() - pEntity.latchedEntity.zOld) * pPartialTicks
+                    - (pEntity.zOld + (pEntity.getZ() - pEntity.zOld) * pPartialTicks);
+            pPoseStack.translate(x, y, z);
+        }
+        
         // 动画计算
         long time = pEntity.level.getGameTime();
         long timeBase = time + (pEntity.getId() * 10L);

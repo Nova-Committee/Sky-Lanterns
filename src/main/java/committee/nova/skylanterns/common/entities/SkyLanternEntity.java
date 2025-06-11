@@ -26,6 +26,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -35,6 +36,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -419,18 +421,26 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         compound.putInt("light_Y", posLight.getY());
         compound.putInt("light_Z", posLight.getZ());
 
-        if (this.isLeashed() && getLeashHolder() == null) {
-            final CompoundTag tag = ObfuscationReflectionHelper.getPrivateValue(Mob.class, this, "field_110170_bx");
-            if (tag != null) {
-                //System.out.println("writing leashNBTTag to disk for vanilla bug fix: " + tag);
-                compound.put("Leash", tag);
+        if (this.getLeashHolder() != null) {
+            CompoundTag compoundtag2 = new CompoundTag();
+            if (this.getLeashHolder() instanceof LivingEntity) {
+                UUID uuid = this.getLeashHolder().getUUID();
+                compoundtag2.putUUID("UUID", uuid);
+            } else if (this.getLeashHolder() instanceof HangingEntity) {
+                BlockPos blockpos = ((HangingEntity) this.getLeashHolder()).getPos();
+                compoundtag2.putInt("X", blockpos.getX());
+                compoundtag2.putInt("Y", blockpos.getY());
+                compoundtag2.putInt("Z", blockpos.getZ());
             }
+
+            compound.put("Leash", compoundtag2);
+        } else if (this.leashInfoTag != null) {
+            compound.put("Leash", this.leashInfoTag.copy());
         }
     }
 
     @Override
     protected void tickLeash() {
-
         if (this.isLeashed() && this.getLeashHolder() != null && this.getLeashHolder().level == this.level) {
             final Entity entity = this.getLeashHolder();
             this.restrictTo(new BlockPos(entity.getX(), entity.getY(), entity.getZ()), 5);
@@ -584,7 +594,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
 
     @Override
-    public void remove(Entity.RemovalReason reason) {
+    public void remove(Entity.@NotNull RemovalReason reason) {
         super.remove(reason);
         // if (!level.isClientSide) {
         //     clearCurrentLightBlock();
