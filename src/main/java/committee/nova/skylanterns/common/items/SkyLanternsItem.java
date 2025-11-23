@@ -1,7 +1,6 @@
 package committee.nova.skylanterns.common.items;
 
 import committee.nova.skylanterns.common.entities.SkyLanternEntity;
-import committee.nova.skylanterns.init.ModTabs;
 import committee.nova.skylanterns.utils.EnumColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -26,10 +25,11 @@ import java.util.List;
 public class SkyLanternsItem extends Item {
 
 
-    private final EnumColor color = EnumColor.ORANGE;
+    private final EnumColor color;
 
     public SkyLanternsItem(EnumColor color) {
-        super(new Properties().stacksTo(16).tab(ModTabs.TAB));
+        super(new Properties().stacksTo(16));
+        this.color = color;
     }
 
 
@@ -37,12 +37,13 @@ public class SkyLanternsItem extends Item {
     public InteractionResult useOn(UseOnContext pContext) {
         final Level world = pContext.getLevel();
         final BlockPos pos = pContext.getClickedPos();
+        final ItemStack stack = pContext.getItemInHand();
+        final Player player = pContext.getPlayer();
         if (!world.isClientSide) {
-            final ItemStack stack = pContext.getItemInHand();
             if (!stack.isEmpty()) {
-                pContext.getPlayer().swing(pContext.getHand());
+                player.swing(pContext.getHand());
 
-                final SkyLanternEntity entity = SkyLanternEntity.create(world, new BlockPos(pos.getX(), pos.getY() + 0.5, pos.getZ()), color);
+                final SkyLanternEntity entity = SkyLanternEntity.create(world, new BlockPos(pos.getX(), (int) (pos.getY() + 0.5), pos.getZ()), color);
                 if (entity == null) {
                     return InteractionResult.FAIL;
                 }
@@ -58,10 +59,10 @@ public class SkyLanternsItem extends Item {
     @Override
     public InteractionResult interactLivingEntity(@Nonnull ItemStack stack, Player player, @Nonnull LivingEntity entity, @Nonnull InteractionHand hand) {
         if (player.isShiftKeyDown()) {
-            if (!player.level.isClientSide) {
+            if (!player.level().isClientSide) {
                 final AABB bound = new AABB(entity.getX() - 0.2, entity.getY() - 0.5, entity.getZ() - 0.2,
                         entity.getX() + 0.2, entity.getY() + entity.getDimensions(entity.getPose()).height + 4, entity.getZ() + 0.2);
-                final List<SkyLanternEntity> balloonsNear = player.level.getEntitiesOfClass(SkyLanternEntity.class, bound);
+                final List<SkyLanternEntity> balloonsNear = player.level().getEntitiesOfClass(SkyLanternEntity.class, bound);
                 for (SkyLanternEntity balloon : balloonsNear) {
                     if (balloon.latchedEntity == entity) {
                         return InteractionResult.SUCCESS;
@@ -71,7 +72,7 @@ public class SkyLanternsItem extends Item {
                 if (balloon == null) {
                     return InteractionResult.FAIL;
                 }
-                player.level.addFreshEntity(balloon);
+                player.level().addFreshEntity(balloon);
                 stack.shrink(1);
             }
             return InteractionResult.SUCCESS;

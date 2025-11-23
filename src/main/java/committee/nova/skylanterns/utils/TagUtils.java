@@ -29,7 +29,7 @@ import java.util.function.LongConsumer;
  * Version: 1.0
  */
 public class TagUtils {
-    private TagUtils () {
+    private TagUtils() {
     }
 
     public static void setByteIfPresent(CompoundTag tag, String key, ByteConsumer setter) {

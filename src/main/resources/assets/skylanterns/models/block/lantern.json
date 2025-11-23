@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/cube_all",
 	"textures": {
-		"0": "skylanterns:entities/sky_lantern_orange",
-		"particle": "skylanterns:entities/sky_lantern_orange"
+		"0": "skylanterns:entity/sky_lantern_orange",
+		"particle": "skylanterns:entity/sky_lantern_orange"
 	},
 	"elements": [
 		{

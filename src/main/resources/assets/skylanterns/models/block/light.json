@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/cube_all",
 	"textures": {
-		"0": "skylanterns:entities/radiant_light",
-		"particle": "skylanterns:entities/radiant_light"
+		"0": "skylanterns:entity/radiant_light",
+		"particle": "skylanterns:entity/radiant_light"
 	},
 	"elements": [
 		{
