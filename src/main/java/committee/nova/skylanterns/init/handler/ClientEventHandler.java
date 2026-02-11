@@ -26,14 +26,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 @Mod.EventBusSubscriber(modid = SkyLanterns.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEventHandler {
 
-
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void registerIconsPre(TextureStitchEvent.Pre event) {
-
-        //optifine breaks (removes) forge added method setTextureEntry, dont use it
-
         event.addSprite(new ResourceLocation(SkyLanterns.MOD_ID + ":entities/radiant_light"));
-
     }
 
     @SubscribeEvent
@@ -43,15 +38,14 @@ public class ClientEventHandler {
 
 
     @SubscribeEvent
-    public static void modelRegEvent(ModelRegistryEvent event) {
+    public static void onRegisterAdditional(ModelEvent.RegisterAdditional event) {
         ModModelCache.instance.setup();
     }
 
     @SubscribeEvent
-    public static void onModelBake(ModelBakeEvent event) {
+    public static void onModelBake(ModelEvent.BakingCompleted event) {
         ModModelCache.instance.onBake(event);
     }
-
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {

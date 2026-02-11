@@ -20,6 +20,7 @@ public class LitBlock extends AirBlock {
         super(Properties.of(Material.AIR).noCollission().air().lightLevel((p_235470_0_) -> 1));
     }
 
+
     @Override
     public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, Random pRand) {
         super.animateTick(pState, pLevel, pPos, pRand);

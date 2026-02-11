@@ -18,7 +18,7 @@ import net.minecraftforge.registries.RegistryObject;
  */
 public class ModEntities {
 
-    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, SkyLanterns.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> ENTITIE_TYPE = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SkyLanterns.MOD_ID);
 
     public static final RegistryObject<EntityType<SkyLanternEntity>> SKY_LANTERN = ENTITIES.register("skylantern",
             () -> EntityType.Builder.of(SkyLanternEntity::new, MobCategory.CREATURE)

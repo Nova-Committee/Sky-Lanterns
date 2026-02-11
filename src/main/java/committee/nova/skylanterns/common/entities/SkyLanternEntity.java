@@ -512,9 +512,8 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         super.tickLeash();
     }
 
-
     @Override
-    public float getBrightness() {
+    public float getLightLevelDependentMagicValue() {
         return 15728880;
     }
 

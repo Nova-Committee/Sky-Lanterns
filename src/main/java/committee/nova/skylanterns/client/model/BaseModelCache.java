@@ -36,16 +36,12 @@ public class BaseModelCache {
         return bakedModel;
     }
 
-    public void onBake(ModelBakeEvent evt) {
+    public void onBake(ModelEvent.BakingCompleted evt) {
         modelMap.values().forEach(m -> m.reload(evt));
     }
 
     public void setup() {
         modelMap.values().forEach(ModelData::setup);
-    }
-
-    protected OBJModelData registerOBJ(ResourceLocation rl) {
-        return register(rl, OBJModelData::new);
     }
 
     protected JSONModelData registerJSON(ResourceLocation rl) {
@@ -59,7 +55,6 @@ public class BaseModelCache {
     }
 
     public static class ModelData {
-
         protected final ResourceLocation rl;
         private final Map<IModelConfiguration, BakedModel> bakedMap = new Object2ObjectOpenHashMap<>();
         protected IModelGeometry<?> model;
@@ -68,8 +63,8 @@ public class BaseModelCache {
             this.rl = rl;
         }
 
-        protected void reload(ModelBakeEvent evt) {
-            bakedMap.clear();
+        protected void reload(ModelEvent.BakingCompleted evt) {
+            this.bakedModel = getBakedModel(evt, rl);
         }
 
         protected void setup() {
@@ -90,10 +85,8 @@ public class BaseModelCache {
             super(rl);
         }
 
-        @Override
-        protected void reload(ModelBakeEvent evt) {
-            super.reload(evt);
-            model = OBJLoader.INSTANCE.loadModel(new OBJModel.ModelSettings(rl, true, true, true, true, null));
+        public ResourceLocation getResourceLocation() {
+            return rl;
         }
     }
 
