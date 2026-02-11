@@ -2,7 +2,6 @@ package committee.nova.skylanterns.common.blocks;
 
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,7 +22,7 @@ public class LitBlock extends AirBlock {
 
 
     @Override
-    public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, RandomSource pRand) {
+    public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, Random pRand) {
         super.animateTick(pState, pLevel, pPos, pRand);
     }
 }

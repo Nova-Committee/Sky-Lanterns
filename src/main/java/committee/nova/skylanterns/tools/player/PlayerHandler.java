@@ -16,7 +16,7 @@ public class PlayerHandler {
         if (!(target instanceof SkyLanternEntity)) {
             return;
         }
-        final Player player = event.getEntity();
+        final Player player = event.getPlayer();
         if (!player.isCrouching()) {
             return;
         }

@@ -23,7 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 public class PaperLanternPinkModel extends EntityModel<SkyLanternEntity> {
 
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
-            new ResourceLocation(SkyLanterns.MOD_ID, "sky_lantern_pink"), "main");
+            new ResourceLocation(SkyLanterns.MOD_ID, "paper_lantern_pink"), "main");
 
     private final ModelPart bottom;
     private final ModelPart top2;

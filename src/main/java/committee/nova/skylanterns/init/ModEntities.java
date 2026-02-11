@@ -20,12 +20,12 @@ public class ModEntities {
 
     public static final DeferredRegister<EntityType<?>> ENTITIE_TYPE = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SkyLanterns.MOD_ID);
 
-    public static final RegistryObject<EntityType<SkyLanternEntity>> SKY_LANTERN = ENTITIE_TYPE.register("skylantern",
+    public static final RegistryObject<EntityType<SkyLanternEntity>> SKY_LANTERN = ENTITIES.register("skylantern",
             () -> EntityType.Builder.of(SkyLanternEntity::new, MobCategory.CREATURE)
                     .sized(1f, 1f)
                     .build(new ResourceLocation(SkyLanterns.MOD_ID, "skylantern").toString()));
 
     public static void register(IEventBus modEventBus) {
-        ENTITIE_TYPE.register(modEventBus);
+        ENTITIES.register(modEventBus);
     }
 }

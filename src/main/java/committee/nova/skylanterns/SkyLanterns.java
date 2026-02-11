@@ -20,7 +20,15 @@ public class SkyLanterns {
     public static final String MOD_ID = "skylanterns";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    public SkyLanterns(FMLJavaModLoadingContext context) {
+    public SkyLanterns() {
+        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
+        ModEntities.register(modEventBus);
+
+        modEventBus.addListener(this::addAttributes);
+
         MinecraftForge.EVENT_BUS.register(this);
 
         var modEventBus = context.getModEventBus();

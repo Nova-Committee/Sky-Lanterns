@@ -21,7 +21,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -62,6 +61,10 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     private double windStrength = 0.0;
     private Vec3 driftVelocity = Vec3.ZERO;
     private int driftChangeTimer = 0;
+    private Vec3 groundSwayDirection = Vec3.ZERO;
+    private int groundSwayTimer = 0;
+    private double groundSwayIntensity = 0.0;
+    private Vec3 groundBasePosition = Vec3.ZERO;
 
     public BlockPos posLight = new BlockPos(BlockPos.ZERO);
     public LivingEntity latchedEntity;
@@ -69,6 +72,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     private BlockPos latched;
     private boolean hasCachedEntity;
     private UUID cachedEntityUUID;
+
 
     public SkyLanternEntity(EntityType<SkyLanternEntity> type, Level level) {
         super(ModEntities.SKY_LANTERN.get(), level);
@@ -174,7 +178,6 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         this.setNoGravity(true);
         this.setPersistenceRequired();
 
-
         if (getY() >= level.getMaxBuildHeight()) {
             pop();
             return;
@@ -244,7 +247,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         }
 
         if (!isLatched()) {
-            final RandomSource rnd = this.random;
+            final Random rnd = this.random;
             Vec3 motion = getDeltaMovement();
 
             // 基础上升力
@@ -314,7 +317,62 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
             }
 
         } else if (latched != null) {
+            // 优化地面晃动效果
+            if (!level.isClientSide) {
+                final Random rnd = this.random;
+
+                // 初始化基础位置
+                if (groundBasePosition.equals(Vec3.ZERO)) {
+                    groundBasePosition = new Vec3(
+                            latched.getX() + 0.5F,
+                            latched.getY() + 1.8F,
+                            latched.getZ() + 0.5F
+                    );
+                }
+
+                // 更新地面摇摆效果（每40-80 tick变化一次）
+                groundSwayTimer--;
+                if (groundSwayTimer <= 0) {
+                    groundSwayTimer = 40 + rnd.nextInt(40); // 2-4秒变化一次
+
+                    // 生成新的摇摆方向和强度
+                    double swayAngle = rnd.nextDouble() * Math.PI * 2;
+                    groundSwayIntensity = 0.01 + rnd.nextDouble() * 0.02; // 0.01-0.03的摇摆强度
+
+                    groundSwayDirection = new Vec3(
+                            Math.cos(swayAngle) * groundSwayIntensity,
+                            Math.sin(level.getGameTime() * 0.05) * 0.005, // 轻微的垂直摇摆
+                            Math.sin(swayAngle) * groundSwayIntensity
+                    );
+                }
+
+                // 应用摇摆效果
+                double swayX = Math.sin(level.getGameTime() * 0.03) * groundSwayDirection.x();
+                double swayY = Math.sin(level.getGameTime() * 0.04) * groundSwayDirection.y();
+                double swayZ = Math.cos(level.getGameTime() * 0.035) * groundSwayDirection.z();
+
+                // 添加随机微小扰动
+                if (rnd.nextInt(10) == 0) {
+                    swayX += (rnd.nextDouble() - 0.5) * 0.005;
+                    swayZ += (rnd.nextDouble() - 0.5) * 0.005;
+                }
+
+                // 设置新位置（相对于基础位置的偏移）
+                Vec3 newPos = groundBasePosition.add(swayX, swayY, swayZ);
+                setPos(newPos.x(), newPos.y(), newPos.z());
+
+                // 确保不会移动太远
+                double distanceFromBase = newPos.distanceTo(groundBasePosition);
+                if (distanceFromBase > 0.1) {
+                    Vec3 direction = newPos.subtract(groundBasePosition).normalize();
+                    Vec3 clampedPos = groundBasePosition.add(direction.scale(0.1));
+                    setPos(clampedPos.x(), clampedPos.y(), clampedPos.z());
+                }
+            }
+
+            // 保持静止的运动状态
             setDeltaMovement(0, 0, 0);
+
         } else if (latchedEntity != null && latchedEntity.getHealth() > 0) {
             final int floor = getFloor(latchedEntity);
             final Vec3 motion = latchedEntity.getDeltaMovement();
@@ -350,6 +408,13 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
 
         this.fallDistance = 0;
+    }
+
+    private void resetGroundState() {
+        groundBasePosition = Vec3.ZERO;
+        groundSwayDirection = Vec3.ZERO;
+        groundSwayTimer = 0;
+        groundSwayIntensity = 0.0;
     }
 
     public double getAddedHeight() {
@@ -392,18 +457,19 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     protected void playStepSound(BlockPos pos, BlockState state) {
     }
 
-
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         TagUtils.setEnumIfPresent(compound, "color", EnumColor::byIndexStatic, color -> this.color = color);
-        TagUtils.setBlockPosIfPresent(compound, "latched", pos -> latched = pos);
+        TagUtils.setBlockPosIfPresent(compound, "latched", pos -> {
+            latched = pos;
+            resetGroundState();
+        });
         TagUtils.setUUIDIfPresent(compound, "owner", uuid -> {
             hasCachedEntity = true;
             cachedEntityUUID = uuid;
         });
 
         posLight = new BlockPos(compound.getInt("light_X"), compound.getInt("light_Y"), compound.getInt("light_Z"));
-
     }
 
     @Override
