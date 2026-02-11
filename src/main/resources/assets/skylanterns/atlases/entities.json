@@ -1,0 +1,8 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "skylanterns:entity/radiant_light"
+    }
+  ]
+}

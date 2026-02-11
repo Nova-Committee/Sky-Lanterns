@@ -1,7 +1,9 @@
 package committee.nova.skylanterns.utils;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.RenderType;
+
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -36,16 +38,17 @@ public class RenderUtil {
     public static void finishDrawing(BufferBuilder buf, @Nullable RenderType type) {
         if (buf.building()) {
             if (type != null) {
-                type.end(buf, 0, 0, 0);
+                type.end(buf, RenderSystem.getVertexSorting());
             } else {
                 BufferBuilder.RenderedBuffer renderedBuffer = buf.end();
                 BufferUploader.draw(renderedBuffer);
             }
         }
     }
+
     public static void refreshDrawing(VertexConsumer vb, RenderType type) {
         if (vb instanceof BufferBuilder) {
-            type.end((BufferBuilder) vb, 0, 0, 0);
+            type.end((BufferBuilder) vb, RenderSystem.getVertexSorting());
             ((BufferBuilder) vb).begin(type.mode(), type.format());
         }
     }

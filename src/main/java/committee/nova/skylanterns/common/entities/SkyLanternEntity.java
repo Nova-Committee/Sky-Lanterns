@@ -1,13 +1,12 @@
 package committee.nova.skylanterns.common.entities;
 
-import com.mojang.math.Vector3f;
 import committee.nova.skylanterns.SkyLanterns;
 import committee.nova.skylanterns.common.configs.ModConfig;
 import committee.nova.skylanterns.init.ModBlocks;
 import committee.nova.skylanterns.init.ModEntities;
 import committee.nova.skylanterns.utils.EnumColor;
-import committee.nova.skylanterns.utils.TagUtils;
 import committee.nova.skylanterns.utils.LevelUtils;
+import committee.nova.skylanterns.utils.TagUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -26,6 +26,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -33,8 +34,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,7 +99,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
     @Nullable
     public static SkyLanternEntity create(LivingEntity entity, EnumColor c) {
-        final SkyLanternEntity balloon = ModEntities.SKY_LANTERN.get().create(entity.level);
+        final SkyLanternEntity balloon = ModEntities.SKY_LANTERN.get().create(entity.level());
         if (balloon == null) {
             return null;
         }
@@ -175,34 +177,34 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         this.setPersistenceRequired();
 
 
-        if (getY() >= level.getMaxBuildHeight()) {
+        if (getY() >= level().getMaxBuildHeight()) {
             pop();
             return;
         } else {
-            if (level.random.nextInt(5) == 0) {
+            if (level().random.nextInt(5) == 0) {
                 final double d0 = xo;
                 final double d1 = yo + 0.15D;
                 final double d2 = zo;
-                level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
-                level.addParticle(ParticleTypes.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
+                level().addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
+                level().addParticle(ParticleTypes.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
             }
         }
 
-        if (level.isClientSide) {
+        if (level().isClientSide) {
             if (entityData.get(IS_LATCHED) == 1) {
                 latched = new BlockPos(entityData.get(LATCHED_X), entityData.get(LATCHED_Y), entityData.get(LATCHED_Z));
             } else {
                 latched = null;
             }
             if (entityData.get(IS_LATCHED) == 2) {
-                latchedEntity = (LivingEntity) level.getEntity(entityData.get(LATCHED_ID));
+                latchedEntity = (LivingEntity) level().getEntity(entityData.get(LATCHED_ID));
             } else {
                 latchedEntity = null;
             }
         } else {
             if (hasCachedEntity) {
-                if (level instanceof ServerLevel) {
-                    final Entity entity = ((ServerLevel) level).getEntity(cachedEntityUUID);
+                if (level() instanceof ServerLevel) {
+                    final Entity entity = ((ServerLevel) level()).getEntity(cachedEntityUUID);
                     if (entity instanceof LivingEntity) {
                         latchedEntity = (LivingEntity) entity;
                     }
@@ -228,9 +230,9 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         }
 
 
-        if (!level.isClientSide) {
+        if (!level().isClientSide) {
             if (latched != null) {
-                final Optional<BlockState> blockState = LevelUtils.getBlockState(level, latched);
+                final Optional<BlockState> blockState = LevelUtils.getBlockState(level(), latched);
                 if (blockState.isPresent() && blockState.get().isAir()) {
                     latched = null;
                     entityData.set(IS_LATCHED, (byte) 0);
@@ -256,7 +258,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
                 }
             }
 
-            if (!level.isClientSide && !this.isLeashed() && this.getLeashHolder() == null) {
+            if (!level().isClientSide && !this.isLeashed() && this.getLeashHolder() == null) {
                 // 更新风向和强度（每60-120 tick变化一次）
                 windChangeTimer--;
                 if (windChangeTimer <= 0) {
@@ -309,7 +311,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
             setDeltaMovement(motion);
             move(MoverType.SELF, getDeltaMovement());
 
-            if (!this.level.noCollision(this.getBoundingBox())) {
+            if (!this.level().noCollision(this.getBoundingBox())) {
                 this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.getZ());
             }
 
@@ -329,21 +331,21 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         }
 
         if (ModConfig.COMMON.lightUpdateRate.get() != -1) {
-            if (!this.level.isClientSide && (ModConfig.COMMON.lightUpdateRate.get() <= 0 || level.getGameTime() % ModConfig.COMMON.lightUpdateRate.get() == 0)) {
+            if (!this.level().isClientSide && (ModConfig.COMMON.lightUpdateRate.get() <= 0 || level().getGameTime() % ModConfig.COMMON.lightUpdateRate.get() == 0)) {
                 final double dist = distanceToSqr(posLight.getX(), posLight.getY(), posLight.getZ());
-                if (dist >= ModConfig.COMMON.lightUpdateDistanceAccuracy.get() || level.getBlockState(posLight).getBlock() != ModBlocks.AIR_LIT.get()) {
+                if (dist >= ModConfig.COMMON.lightUpdateDistanceAccuracy.get() || level().getBlockState(posLight).getBlock() != ModBlocks.AIR_LIT.get()) {
                     //remove old if needed
                     clearCurrentLightBlock();
                     //set new, setting light high in the sky is a lag fest, only allow it when directly above ground
                     posLight = blockPosition();
-                    if (level.isEmptyBlock(posLight) && level.getBlockFloorHeight(posLight) + ModConfig.COMMON.lightUpdateDistanceToGround.get() > getY()) {
-                        level.setBlockAndUpdate(posLight, ModBlocks.AIR_LIT.get().defaultBlockState());
+                    if (level().isEmptyBlock(posLight) && level().getBlockFloorHeight(posLight) + ModConfig.COMMON.lightUpdateDistanceToGround.get() > getY()) {
+                        level().setBlockAndUpdate(posLight, ModBlocks.AIR_LIT.get().defaultBlockState());
                     }
                 }
             }
         } else {
             //if they changed the config, make sure to remove old light
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                 clearCurrentLightBlock();
             }
         }
@@ -357,9 +359,9 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     }
 
     private int getFloor(LivingEntity entity) {
-        final BlockPos pos = new BlockPos(entity.position());
+        final BlockPos pos = new BlockPos(entity.blockPosition());
         for (BlockPos posi = pos; posi.getY() > 0; posi = posi.below()) {
-            if (posi.getY() < level.getMaxBuildHeight() && !level.isEmptyBlock(posi)) {
+            if (posi.getY() < level().getMaxBuildHeight() && !level().isEmptyBlock(posi)) {
                 return posi.getY() + 1 + (entity instanceof Player ? 1 : 0);
             }
         }
@@ -369,10 +371,10 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
     public void clearCurrentLightBlock() {
         if (!posLight.equals(BlockPos.ZERO)) {
-            final BlockState state = level.getBlockState(posLight);
+            final BlockState state = level().getBlockState(posLight);
             if (state.getBlock() == ModBlocks.AIR_LIT.get()) {
                 //System.out.println("set " + posLight + " to air");
-                level.setBlockAndUpdate(posLight, Blocks.AIR.defaultBlockState());
+                level().setBlockAndUpdate(posLight, Blocks.AIR.defaultBlockState());
             }
             posLight = BlockPos.ZERO;
         }
@@ -419,21 +421,29 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         compound.putInt("light_Y", posLight.getY());
         compound.putInt("light_Z", posLight.getZ());
 
-        if (this.isLeashed() && getLeashHolder() == null) {
-            final CompoundTag tag = ObfuscationReflectionHelper.getPrivateValue(Mob.class, this, "field_110170_bx");
-            if (tag != null) {
-                //System.out.println("writing leashNBTTag to disk for vanilla bug fix: " + tag);
-                compound.put("Leash", tag);
+        if (this.getLeashHolder() != null) {
+            CompoundTag compoundtag2 = new CompoundTag();
+            if (this.getLeashHolder() instanceof LivingEntity) {
+                UUID uuid = this.getLeashHolder().getUUID();
+                compoundtag2.putUUID("UUID", uuid);
+            } else if (this.getLeashHolder() instanceof HangingEntity) {
+                BlockPos blockpos = ((HangingEntity) this.getLeashHolder()).getPos();
+                compoundtag2.putInt("X", blockpos.getX());
+                compoundtag2.putInt("Y", blockpos.getY());
+                compoundtag2.putInt("Z", blockpos.getZ());
             }
+
+            compound.put("Leash", compoundtag2);
+        } else if (this.leashInfoTag != null) {
+            compound.put("Leash", this.leashInfoTag.copy());
         }
     }
 
     @Override
     protected void tickLeash() {
-
-        if (this.isLeashed() && this.getLeashHolder() != null && this.getLeashHolder().level == this.level) {
+        if (this.isLeashed() && this.getLeashHolder() != null && this.getLeashHolder().level() == this.level()) {
             final Entity entity = this.getLeashHolder();
-            this.restrictTo(new BlockPos(entity.getX(), entity.getY(), entity.getZ()), 5);
+            this.restrictTo(new BlockPos(entity.getBlockX(), entity.getBlockY(), entity.getBlockZ()), 5);
             final float f = this.distanceTo(entity);
             this.onLeashDistance(f);
             if (f > 4.0F) {
@@ -453,7 +463,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
     @Nonnull
     @Override
-    public Packet<?> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
@@ -490,7 +500,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
         if (type == 1) {
             latched = data.readBlockPos();
         } else if (type == 2) {
-            latchedEntity = (LivingEntity) level.getEntity(data.readVarInt());
+            latchedEntity = (LivingEntity) level().getEntity(data.readVarInt());
         } else {
             latched = null;
         }
@@ -513,7 +523,8 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
             return false;
         }
         markHurt();
-        if (dmgSource != DamageSource.MAGIC && dmgSource != DamageSource.DROWN && dmgSource != DamageSource.FALL) {
+        var sources = level().damageSources();
+        if (dmgSource != sources.magic() && dmgSource != sources.drown() && dmgSource != sources.fall()) {
             pop();
             return true;
         }
@@ -521,7 +532,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     }
 
     private void pop() {
-        if (!level.isClientSide) {
+        if (!level().isClientSide) {
             Vector3f colorVec = new Vector3f(
                     color.getColor(0),
                     color.getColor(1),
@@ -529,7 +540,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
             );
             DustParticleOptions dustParticleOptions = new DustParticleOptions(colorVec, 1.0F);
             for (int i = 0; i < 10; i++) {
-                ((ServerLevel) level).sendParticles(
+                ((ServerLevel) level()).sendParticles(
                         dustParticleOptions,
                         getX() + 0.6 * random.nextFloat() - 0.3,
                         getY() + 0.6 * random.nextFloat() - 0.3,
@@ -572,7 +583,7 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
 
     public boolean isLatched() {
-        if (level.isClientSide) {
+        if (level().isClientSide) {
             return entityData.get(IS_LATCHED) > 0;
         }
         return latched != null || latchedEntity != null;
@@ -584,9 +595,9 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
 
 
     @Override
-    public void remove(Entity.RemovalReason reason) {
+    public void remove(Entity.@NotNull RemovalReason reason) {
         super.remove(reason);
-        // if (!level.isClientSide) {
+        // if (!level().isClientSide) {
         //     clearCurrentLightBlock();
         // }
         if (latchedEntity != null) {
@@ -598,8 +609,8 @@ public class SkyLanternEntity extends PathfinderMob implements IEntityAdditional
     public void setUnlatched() {
         latched = null;
         entityData.set(IS_LATCHED, (byte) 0);
-        if (!level.isClientSide)
-            level.playSound(null, this, SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.NEUTRAL, 1F, 1F);
+        if (!level().isClientSide)
+            level().playSound(null, this, SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.NEUTRAL, 1F, 1F);
     }
 
 

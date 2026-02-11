@@ -21,7 +21,7 @@ public class ModItems {
     public static final RegistryObject<Item> SKY_LANTERN_ORANGE = ITEMS.register("sky_lantern_orange",
             () -> new SkyLanternsItem(EnumColor.ORANGE));
     public static final RegistryObject<Item> SKY_LANTERN_PINK = ITEMS.register("sky_lantern_pink",
-            () -> new SkyLanternsItem(EnumColor.PINK));
+            () -> new SkyLanternsItem(EnumColor.BRIGHT_PINK));
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

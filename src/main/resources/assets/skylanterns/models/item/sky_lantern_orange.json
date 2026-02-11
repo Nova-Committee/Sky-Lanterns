@@ -1,6 +1,6 @@
 {
-	"parent": "item/handheld",
+	"parent": "item/generated",
 	"textures": {
-		"layer0": "skylanterns:items/sky_lantern_orange"
+		"layer0": "skylanterns:item/sky_lantern_orange"
 	}
 }

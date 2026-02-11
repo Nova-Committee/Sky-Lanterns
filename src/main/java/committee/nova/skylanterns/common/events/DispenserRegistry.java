@@ -18,26 +18,26 @@ import javax.annotation.Nonnull;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DispenserRegistry {
     @SubscribeEvent
-    public static void onDispenserRegister (FMLCommonSetupEvent event) {
+    public static void onDispenserRegister(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             DispenserBlock.registerBehavior(ModItems.SKY_LANTERN_ORANGE.get(), new DefaultDispenseItemBehavior() {
                 @Override
                 @Nonnull
-                public ItemStack execute (@Nonnull BlockSource source, @Nonnull ItemStack stack) {
+                public ItemStack execute(@Nonnull BlockSource source, @Nonnull ItemStack stack) {
                     return spawnSkyLantern(source, stack);
                 }
             });
             DispenserBlock.registerBehavior(ModItems.SKY_LANTERN_PINK.get(), new DefaultDispenseItemBehavior() {
                 @Override
                 @Nonnull
-                public ItemStack execute (@Nonnull BlockSource source, @Nonnull ItemStack stack) {
+                public ItemStack execute(@Nonnull BlockSource source, @Nonnull ItemStack stack) {
                     return spawnSkyLantern(source, stack);
                 }
             });
         });
     }
 
-    public static ItemStack spawnSkyLantern (@Nonnull BlockSource source, @Nonnull ItemStack stack) {
+    public static ItemStack spawnSkyLantern(@Nonnull BlockSource source, @Nonnull ItemStack stack) {
         Level level = source.getLevel();
         BlockPos blockpos = source.getPos().relative(source.getBlockState().getValue(DispenserBlock.FACING));
 

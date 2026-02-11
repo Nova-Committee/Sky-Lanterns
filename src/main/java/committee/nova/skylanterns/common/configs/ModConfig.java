@@ -1,8 +1,6 @@
 package committee.nova.skylanterns.common.configs;
 
-import committee.nova.skylanterns.SkyLanterns;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -23,6 +21,7 @@ public class ModConfig {
 
     public static class Common {
         public final ForgeConfigSpec.ConfigValue<Integer> lightUpdateRate, lightUpdateDistanceAccuracy, lightUpdateDistanceToGround;
+        public final ForgeConfigSpec.ConfigValue<Boolean> enableLanternShader;
 
 
         public Common(ForgeConfigSpec.Builder builder) {
@@ -30,6 +29,7 @@ public class ModConfig {
             lightUpdateRate = builder.comment("检查天灯是否应该放置一个新的不可见光源的时间间隔，性能敏感，设置为-1以使其永远不会放置不可见光块").defineInRange("lightUpdateRate", 10, 0, Integer.MAX_VALUE);
             lightUpdateDistanceAccuracy = builder.comment("天灯在放置新光源之前需要与之前放置的光源相距多远，性能敏感").defineInRange("lightUpdateDistanceAccuracy", 4, 0, Integer.MAX_VALUE);
             lightUpdateDistanceToGround = builder.comment("天灯需要离地面多近才能放置光源，这样可以防止将光源放置在天空中的高处，这会降低性能，对性能非常敏感").defineInRange("lightUpdateDistanceToGround", 6, 0, Integer.MAX_VALUE);
+            enableLanternShader = builder.comment("是否启用孔明灯着色器发光效果（开启后孔明灯里的火会变成光晕）").define("enableLanternShader", true);
 
 
         }

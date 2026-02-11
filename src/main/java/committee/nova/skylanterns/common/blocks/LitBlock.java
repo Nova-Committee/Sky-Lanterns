@@ -1,14 +1,6 @@
 package committee.nova.skylanterns.common.blocks;
 
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-
-import java.util.Random;
 
 /**
  * Description:
@@ -18,12 +10,6 @@ import java.util.Random;
  */
 public class LitBlock extends AirBlock {
     public LitBlock() {
-        super(Properties.of(Material.AIR).noCollission().air().lightLevel((p_235470_0_) -> 1));
-    }
-
-
-    @Override
-    public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, RandomSource pRand) {
-        super.animateTick(pState, pLevel, pPos, pRand);
+        super(Properties.of().noCollission().air().lightLevel((state) -> 15));
     }
 }

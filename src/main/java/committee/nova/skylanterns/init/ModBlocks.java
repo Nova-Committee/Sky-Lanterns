@@ -31,6 +31,6 @@ public class ModBlocks {
     }
 
     private static <T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block) {
-        return BLOCK_ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(ModTabs.TAB)));
+        return BLOCK_ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 }

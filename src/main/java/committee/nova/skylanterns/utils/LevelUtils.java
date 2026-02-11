@@ -22,7 +22,7 @@ public class LevelUtils {
 
     //@Contract("null, _ -> false")
     public static boolean isBlockLoaded(@Nullable BlockGetter level, @Nonnull BlockPos pos) {
-        if (level == null || ! Level.isInSpawnableBounds(pos)) {
+        if (level == null || !Level.isInSpawnableBounds(pos)) {
             return false;
         } else if (level instanceof LevelReader) {
             //Note: We don't bother checking if it is a world and then isBlockPresent because
